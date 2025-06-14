@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  app-test:
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+    container_name: mini-crm-app-test
+    environment:
+      - NODE_ENV=test
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+      - "${WS_PORT:-3001}:3001"
+    volumes:
+      - .:/app
+      - node_modules_data:/app/node_modules
+    env_file:
+      - .env.test
+    depends_on:
+      mysql-test:
+        condition: service_started
+      redis-test:
+        condition: service_started
+    networks:
+      - mini-crm-network
+    profiles:
+      - test
+
+  mysql-test:
+    image: mysql:8.0
+    container_name: mini-crm-mysql-test
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    tmpfs:
+      - /var/lib/mysql
+    networks:
+      - mini-crm-network
+
+  redis-test:
+    image: redis:7-alpine
+    container_name: mini-crm-redis-test
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    tmpfs:
+      - /data
+    networks:
+      - mini-crm-network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mini-crm-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - mini-crm-network
+
+networks:
+  mini-crm-network:
+    driver: bridge
+
+volumes:
+  node_modules_data:

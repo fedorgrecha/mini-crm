@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RolesGuard } from './guards/roles.guard';
+import { RouterModule } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -20,6 +21,12 @@ import { RolesGuard } from './guards/roles.guard';
         signOptions: { expiresIn: configService.get<string>('JWT_EXPIRES_IN') },
       }),
     }),
+    RouterModule.register([
+      {
+        path: 'api/v1',
+        module: AuthModule,
+      },
+    ]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, RolesGuard],

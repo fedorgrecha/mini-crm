@@ -12,6 +12,8 @@ RUN npm ci && npm cache clean --force
 
 COPY . .
 
+RUN npm run build
+
 EXPOSE 3000 3001 9229
 
 CMD ["npm", "run", "start:dev"]

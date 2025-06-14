@@ -25,9 +25,7 @@ async function bootstrap() {
     .addTag('crm')
     .build();
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-
-  SwaggerModule.setup('docs', app, documentFactory);
+  SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, config));
 
   const port = process.env.APP_PORT ?? 3000;
   const host = process.env.APP_HOST || '0.0.0.0';
