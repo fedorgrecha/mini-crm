@@ -47,14 +47,18 @@ export class AuthService {
       const user = await this.usersService.findOne(payload.sub);
 
       if (!user || !user.active) {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException('User not found or inactive');
       }
 
       return this.generateTokens(user);
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+
       console.error('Token refresh failed:', String(error));
 
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException('Token refresh failed');
     }
   }
 
@@ -66,6 +70,7 @@ export class AuthService {
     if (user && (await user.validatePassword(password))) {
       return user;
     }
+
     return null;
   }
 

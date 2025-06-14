@@ -12,21 +12,24 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({ summary: 'User registration' })
-  @ApiResponse({ status: 201, type: AuthResponseDto })
+  @ApiResponse({ status: HttpStatus.CREATED, type: AuthResponseDto })
+  @HttpCode(HttpStatus.CREATED)
   @Post('signup')
   signup(@Body() input: RegisterUserDto): Promise<AuthTokens> {
     return this.authService.signup(input);
   }
 
+  @ApiResponse({ status: HttpStatus.OK, type: AuthResponseDto })
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body() loginDto: LoginDto) {
+  login(@Body() loginDto: LoginDto): Promise<AuthTokens> {
     return this.authService.login(loginDto);
   }
 
+  @ApiResponse({ status: HttpStatus.OK, type: AuthResponseDto })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refreshTokens(@Body() refreshTokenDto: RefreshTokenDto) {
+  refreshTokens(@Body() refreshTokenDto: RefreshTokenDto): Promise<AuthTokens> {
     return this.authService.refreshTokens(refreshTokenDto.refreshToken);
   }
 }
