@@ -1,17 +1,15 @@
+version: '3.8'
+
 services:
   app:
     build:
       context: .
-      dockerfile: docker/node/Dockerfile
+      dockerfile: docker/node/Dockerfile.prod
     container_name: mini-crm-app
     restart: unless-stopped
     ports:
       - "${APP_PORT:-3000}:3000"
       - "${WS_PORT:-3001}:3001"
-      - "9229:9229"
-    volumes:
-      - .:/app
-      - node_modules_data:/app/node_modules
     env_file:
       - .env
     depends_on:
@@ -21,14 +19,12 @@ services:
         condition: service_healthy
     networks:
       - mini-crm-network
-    command: npm run start:dev
+    command: npm run start:prod
 
   mysql:
     image: mysql:8.0
     container_name: mini-crm-mysql
     restart: unless-stopped
-    ports:
-      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root_password
       MYSQL_DATABASE: ${DB_DATABASE}
@@ -43,28 +39,10 @@ services:
     networks:
       - mini-crm-network
 
-  mysql-test:
-    image: mysql:8.0
-    container_name: mini-crm-mysql-test
-    restart: unless-stopped
-    ports:
-      - "3307:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-    tmpfs:
-      - /var/lib/mysql
-    networks:
-      - mini-crm-network
-
   redis:
     image: redis:7-alpine
     container_name: mini-crm-redis
     restart: unless-stopped
-    ports:
-      - "6379:6379"
     command: redis-server --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
@@ -72,31 +50,6 @@ services:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       timeout: 10s
       retries: 10
-    networks:
-      - mini-crm-network
-
-  redis-test:
-    image: redis:7-alpine
-    container_name: mini-crm-redis-test
-    restart: unless-stopped
-    ports:
-      - "6380:6379"
-    command: redis-server --requirepass ${REDIS_PASSWORD}
-    tmpfs:
-      - /data
-    networks:
-      - mini-crm-network
-
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: mini-crm-redis-ui
-    restart: unless-stopped
-    ports:
-      - "8081:8081"
-    environment:
-      REDIS_HOSTS: local:redis:6379:0:${REDIS_PASSWORD}
-    depends_on:
-      - redis
     networks:
       - mini-crm-network
 
@@ -115,6 +68,5 @@ networks:
     driver: bridge
 
 volumes:
-  node_modules_data:
   mysql_data:
   redis_data:
