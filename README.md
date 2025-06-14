@@ -80,3 +80,21 @@ The project includes several Docker configurations for different environments:
 ## Custom Configuration
 
 You can create a `docker-compose.override.yml` file for local customizations (this file is ignored by git).
+
+## CLI Commands
+
+### Create Admin User
+
+This command allows you to create an admin user in the system.
+
+#### Using npm
+
+```bash
+npm run admin:create -- -n "Admin Name" -e "admin@example.com" -p "password"
+```
+
+##### Options
+
+- `-n, --name`: The name of the admin user (required)
+- `-e, --email`: The email of the admin user (required)
+- `-p, --password`: The password of the admin user (required)
