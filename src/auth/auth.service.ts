@@ -56,8 +56,6 @@ export class AuthService {
         throw error;
       }
 
-      console.error('Token refresh failed:', String(error));
-
       throw new UnauthorizedException('Token refresh failed');
     }
   }

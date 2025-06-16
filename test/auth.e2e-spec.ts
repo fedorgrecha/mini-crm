@@ -1,14 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { App } from 'supertest/types';
+import { AppModule } from '../src/app.module';
+import { Express } from 'express';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../src/users/entities/user.entity';
 import { Repository } from 'typeorm';
-import { UserRole } from '../src/users/enums/userRole';
+import { AuthResponseDto } from '../src/auth/types/auth.types';
 
 describe('AuthController (e2e)', () => {
-  let app: INestApplication;
+  let app: INestApplication<App>;
   let userRepository: Repository<User>;
   let refreshToken: string;
 
@@ -46,7 +48,7 @@ describe('AuthController (e2e)', () => {
 
   describe('/api/v1/auth/signup (POST)', () => {
     it('should create a new user and return tokens', () => {
-      return request(app.getHttpServer())
+      return request(app.getHttpServer() as Express)
         .post('/api/v1/auth/signup')
         .send({
           name: 'Test User',
@@ -58,25 +60,27 @@ describe('AuthController (e2e)', () => {
           expect(res.body).toHaveProperty('accessToken');
           expect(res.body).toHaveProperty('refreshToken');
 
+          const body = res.body as AuthResponseDto;
+
           // Save tokens for later tests
-          refreshToken = res.body.refreshToken;
+          refreshToken = body.refreshToken;
         });
     });
 
     it('should return 400 when email is already in use', () => {
-      return request(app.getHttpServer())
-        .post('/auth/signup')
+      return request(app.getHttpServer() as Express)
+        .post('/api/v1/auth/signup')
         .send({
           name: 'Another User',
           email: 'test@example.com', // Same email as previous test
           password: 'password123',
         })
-        .expect(400);
+        .expect(409);
     });
 
     it('should return 400 when validation fails', () => {
-      return request(app.getHttpServer())
-        .post('/auth/signup')
+      return request(app.getHttpServer() as Express)
+        .post('/api/v1/auth/signup')
         .send({
           name: 'Test User',
           // Missing email
@@ -88,7 +92,7 @@ describe('AuthController (e2e)', () => {
 
   describe('/api/v1/auth/login (POST)', () => {
     it('should login and return tokens', () => {
-      return request(app.getHttpServer())
+      return request(app.getHttpServer() as Express)
         .post('/api/v1/auth/login')
         .send({
           email: 'test@example.com',
@@ -102,8 +106,8 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return 401 when credentials are invalid', () => {
-      return request(app.getHttpServer())
-        .post('/auth/login')
+      return request(app.getHttpServer() as Express)
+        .post('/api/v1/auth/login')
         .send({
           email: 'test@example.com',
           password: 'wrong-password',
@@ -114,7 +118,7 @@ describe('AuthController (e2e)', () => {
 
   describe('/api/v1/auth/refresh (POST)', () => {
     it('should refresh tokens', () => {
-      return request(app.getHttpServer())
+      return request(app.getHttpServer() as Express)
         .post('/api/v1/auth/refresh')
         .send({
           refreshToken: refreshToken,
@@ -127,8 +131,8 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return 401 when refresh token is invalid', () => {
-      return request(app.getHttpServer())
-        .post('/auth/refresh')
+      return request(app.getHttpServer() as Express)
+        .post('/api/v1/auth/refresh')
         .send({
           refreshToken: 'invalid-token',
         })
