@@ -10,7 +10,6 @@ import { UserRole } from '../src/users/enums/userRole';
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
-  let jwtToken: string;
   let refreshToken: string;
 
   beforeAll(async () => {
@@ -45,10 +44,10 @@ describe('AuthController (e2e)', () => {
     await app.close();
   });
 
-  describe('/auth/signup (POST)', () => {
+  describe('/api/v1/auth/signup (POST)', () => {
     it('should create a new user and return tokens', () => {
       return request(app.getHttpServer())
-        .post('/auth/signup')
+        .post('/api/v1/auth/signup')
         .send({
           name: 'Test User',
           email: 'test@example.com',
@@ -56,16 +55,10 @@ describe('AuthController (e2e)', () => {
         })
         .expect(201)
         .expect((res) => {
-          expect(res.body).toHaveProperty('user');
           expect(res.body).toHaveProperty('accessToken');
           expect(res.body).toHaveProperty('refreshToken');
-          expect(res.body.user.name).toBe('Test User');
-          expect(res.body.user.email).toBe('test@example.com');
-          expect(res.body.user.role).toBe(UserRole.VIEWER);
-          expect(res.body.user).not.toHaveProperty('password');
 
           // Save tokens for later tests
-          jwtToken = res.body.accessToken;
           refreshToken = res.body.refreshToken;
         });
     });
@@ -93,20 +86,18 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  describe('/auth/login (POST)', () => {
+  describe('/api/v1/auth/login (POST)', () => {
     it('should login and return tokens', () => {
       return request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'test@example.com',
           password: 'password123',
         })
         .expect(200)
         .expect((res) => {
-          expect(res.body).toHaveProperty('user');
           expect(res.body).toHaveProperty('accessToken');
           expect(res.body).toHaveProperty('refreshToken');
-          expect(res.body.user.email).toBe('test@example.com');
         });
     });
 
@@ -121,10 +112,10 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  describe('/auth/refresh (POST)', () => {
+  describe('/api/v1/auth/refresh (POST)', () => {
     it('should refresh tokens', () => {
       return request(app.getHttpServer())
-        .post('/auth/refresh')
+        .post('/api/v1/auth/refresh')
         .send({
           refreshToken: refreshToken,
         })

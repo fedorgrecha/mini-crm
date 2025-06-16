@@ -43,12 +43,11 @@ describe('UsersController (e2e)', () => {
 
     // Create admin user
     const adminResponse = await request(app.getHttpServer())
-      .post('/auth/signup')
+      .post('/api/v1/auth/signup')
       .send({
         name: 'Admin User',
         email: 'admin@example.com',
         password: 'password123',
-        role: UserRole.ADMIN,
       });
 
     adminToken = adminResponse.body.accessToken;
@@ -65,7 +64,7 @@ describe('UsersController (e2e)', () => {
 
     // Create manager user
     const managerResponse = await request(app.getHttpServer())
-      .post('/auth/signup')
+      .post('/api/v1/auth/signup')
       .send({
         name: 'Manager User',
         email: 'manager@example.com',
@@ -85,7 +84,7 @@ describe('UsersController (e2e)', () => {
 
     // Create viewer user
     const viewerResponse = await request(app.getHttpServer())
-      .post('/auth/signup')
+      .post('/api/v1/auth/signup')
       .send({
         name: 'Viewer User',
         email: 'viewer@example.com',
@@ -96,7 +95,7 @@ describe('UsersController (e2e)', () => {
 
     // Login again to get fresh tokens with correct roles
     const adminLoginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/v1/auth/login')
       .send({
         email: 'admin@example.com',
         password: 'password123',
@@ -105,7 +104,7 @@ describe('UsersController (e2e)', () => {
     adminToken = adminLoginResponse.body.accessToken;
 
     const managerLoginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/v1/auth/login')
       .send({
         email: 'manager@example.com',
         password: 'password123',
@@ -114,7 +113,7 @@ describe('UsersController (e2e)', () => {
     managerToken = managerLoginResponse.body.accessToken;
 
     const viewerLoginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/v1/auth/login')
       .send({
         email: 'viewer@example.com',
         password: 'password123',

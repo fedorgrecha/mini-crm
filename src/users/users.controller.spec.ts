@@ -9,7 +9,6 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 
 describe('UsersController', () => {
   let controller: UsersController;
-  let service: UsersService;
 
   const mockUser = {
     id: 'test-id',
@@ -54,7 +53,6 @@ describe('UsersController', () => {
       .compile();
 
     controller = module.get<UsersController>(UsersController);
-    service = module.get<UsersService>(UsersService);
   });
 
   afterEach(() => {

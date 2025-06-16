@@ -1,4 +1,4 @@
-import { Command, CommandRunner, Option } from 'nest-commander';
+import { Command, CommandRunner } from 'nest-commander';
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '../../users/users.service';
 import { UserRole } from '../../users/enums/userRole';
