@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { UserRole } from '../src/users/enums/userRole';
 import { Express } from 'express';
 import { AuthResponseDto } from '../src/auth/types/auth.types';
+import { UserResponse } from '../src/users/types/user.type';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -100,41 +101,6 @@ describe('UsersController (e2e)', () => {
     const viewerResponseBody = viewerResponse.body as AuthResponseDto;
 
     viewerToken = viewerResponseBody.accessToken;
-
-    // Login again to get fresh tokens with correct roles
-    const adminLoginResponse = await request(app.getHttpServer() as Express)
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'admin@example.com',
-        password: 'password123',
-      });
-
-    const adminLoginResponseBody = adminLoginResponse.body as AuthResponseDto;
-
-    adminToken = adminLoginResponseBody.accessToken;
-
-    const managerLoginResponse = await request(app.getHttpServer() as Express)
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'manager@example.com',
-        password: 'password123',
-      });
-
-    const managerLoginResponseBody =
-      managerLoginResponse.body as AuthResponseDto;
-
-    managerToken = managerLoginResponseBody.accessToken;
-
-    const viewerLoginResponse = await request(app.getHttpServer() as Express)
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'viewer@example.com',
-        password: 'password123',
-      });
-
-    const viewerLoginResponseBody = viewerLoginResponse.body as AuthResponseDto;
-
-    viewerToken = viewerLoginResponseBody.accessToken;
   });
 
   afterAll(async () => {
@@ -155,12 +121,14 @@ describe('UsersController (e2e)', () => {
         })
         .expect(201);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.name).toBe('Test User');
-      expect(response.body.email).toBe('test@example.com');
-      expect(response.body).not.toHaveProperty('password');
+      const body = response.body as UserResponse;
 
-      userId = response.body.id;
+      expect(body).toHaveProperty('id');
+      expect(body.name).toBe('Test User');
+      expect(body.email).toBe('test@example.com');
+      expect(body).not.toHaveProperty('password');
+
+      userId = body.id;
     });
 
     it('should return 403 when authenticated as manager', () => {
@@ -199,42 +167,6 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe('/users (GET)', () => {
-    it('should return all users when authenticated as admin', async () => {
-      const response = await request(app.getHttpServer() as Express)
-        .get('/users')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .expect(200);
-
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThan(0);
-    });
-
-    it('should return all users when authenticated as manager', async () => {
-      const response = await request(app.getHttpServer() as Express)
-        .get('/users')
-        .set('Authorization', `Bearer ${managerToken}`)
-        .expect(200);
-
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThan(0);
-    });
-
-    it('should return all users when authenticated as viewer', async () => {
-      const response = await request(app.getHttpServer() as Express)
-        .get('/users')
-        .set('Authorization', `Bearer ${viewerToken}`)
-        .expect(200);
-
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThan(0);
-    });
-
-    it('should return 401 when not authenticated', () => {
-      return request(app.getHttpServer() as Express).get('/users').expect(401);
-    });
-  });
-
   describe('/users/:id (GET)', () => {
     it('should return a user when authenticated as admin', async () => {
       const response = await request(app.getHttpServer() as Express)
@@ -242,8 +174,10 @@ describe('UsersController (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.id).toBe(userId);
+      const body = response.body as UserResponse;
+
+      expect(body).toHaveProperty('id');
+      expect(body.id).toBe(userId);
     });
 
     it('should return a user when authenticated as manager', async () => {
@@ -252,8 +186,10 @@ describe('UsersController (e2e)', () => {
         .set('Authorization', `Bearer ${managerToken}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.id).toBe(userId);
+      const body = response.body as UserResponse;
+
+      expect(body).toHaveProperty('id');
+      expect(body.id).toBe(userId);
     });
 
     it('should return a user when authenticated as viewer', async () => {
@@ -262,12 +198,16 @@ describe('UsersController (e2e)', () => {
         .set('Authorization', `Bearer ${viewerToken}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.id).toBe(userId);
+      const body = response.body as UserResponse;
+
+      expect(body).toHaveProperty('id');
+      expect(body.id).toBe(userId);
     });
 
     it('should return 401 when not authenticated', () => {
-      return request(app.getHttpServer() as Express).get(`/users/${userId}`).expect(401);
+      return request(app.getHttpServer() as Express)
+        .get(`/users/${userId}`)
+        .expect(401);
     });
 
     it('should return 404 when user does not exist', () => {
@@ -288,9 +228,11 @@ describe('UsersController (e2e)', () => {
         })
         .expect(200);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.id).toBe(userId);
-      expect(response.body.name).toBe('Updated Name');
+      const body = response.body as UserResponse;
+
+      expect(body).toHaveProperty('id');
+      expect(body.id).toBe(userId);
+      expect(body.name).toBe('Updated Name');
     });
 
     it('should update a user when authenticated as manager', async () => {
@@ -302,9 +244,11 @@ describe('UsersController (e2e)', () => {
         })
         .expect(200);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.id).toBe(userId);
-      expect(response.body.name).toBe('Manager Updated Name');
+      const body = response.body as UserResponse;
+
+      expect(body).toHaveProperty('id');
+      expect(body.id).toBe(userId);
+      expect(body.name).toBe('Manager Updated Name');
     });
 
     it('should return 403 when authenticated as viewer', () => {
@@ -337,9 +281,11 @@ describe('UsersController (e2e)', () => {
         })
         .expect(200);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.id).toBe(userId);
-      expect(response.body.role).toBe(UserRole.MANAGER);
+      const body = response.body as UserResponse;
+
+      expect(body).toHaveProperty('id');
+      expect(body.id).toBe(userId);
+      expect(body.role).toBe(UserRole.MANAGER);
     });
 
     it('should return 403 when authenticated as manager', () => {
@@ -379,9 +325,11 @@ describe('UsersController (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.id).toBe(userId);
-      expect(response.body.active).toBe(false);
+      const body = response.body as UserResponse;
+
+      expect(body).toHaveProperty('id');
+      expect(body.id).toBe(userId);
+      expect(body.active).toBe(false);
     });
 
     it('should activate a user when authenticated as manager', async () => {
@@ -390,9 +338,11 @@ describe('UsersController (e2e)', () => {
         .set('Authorization', `Bearer ${managerToken}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.id).toBe(userId);
-      expect(response.body.active).toBe(true);
+      const body = response.body as UserResponse;
+
+      expect(body).toHaveProperty('id');
+      expect(body.id).toBe(userId);
+      expect(body.active).toBe(true);
     });
 
     it('should return 403 when authenticated as viewer', () => {

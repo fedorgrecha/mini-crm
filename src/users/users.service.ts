@@ -19,8 +19,9 @@ export class UsersService {
   ) {}
 
   async register(input: RegisterUserDto): Promise<User> {
-    // Check if user with this email already exists
-    const existingUser = await this.findByEmail(input.email);
+    // Check if a user with this email already exists
+    const existingUser: User | null = await this.findByEmail(input.email);
+
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
@@ -41,9 +42,11 @@ export class UsersService {
 
   async findOne(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
+
     if (!user) {
       throw new NotFoundException(`User with ID "${id}" not found`);
     }
+
     return user;
   }
 
@@ -62,6 +65,7 @@ export class UsersService {
 
   async remove(id: string): Promise<void> {
     const result = await this.usersRepository.delete(id);
+
     if (result.affected === 0) {
       throw new NotFoundException(`User with ID "${id}" not found`);
     }

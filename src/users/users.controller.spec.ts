@@ -80,17 +80,6 @@ describe('UsersController', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('should call usersService.findAll', async () => {
-      mockUsersService.findAll.mockResolvedValue([mockUser]);
-
-      const result = await controller.findAll();
-
-      expect(mockUsersService.findAll).toHaveBeenCalled();
-      expect(result).toEqual([mockUser]);
-    });
-  });
-
   describe('findOne', () => {
     it('should call usersService.findOne with id', async () => {
       mockUsersService.findOne.mockResolvedValue(mockUser);

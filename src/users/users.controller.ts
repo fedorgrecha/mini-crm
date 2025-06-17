@@ -17,58 +17,86 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from './enums/userRole';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { User } from './entities/user.entity';
+import { UserResponse } from './types/user.type';
+import { plainToClass } from 'class-transformer';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiOperation({ summary: 'Create user' })
+  @ApiResponse({ status: HttpStatus.CREATED, type: UserResponse })
+  @HttpCode(HttpStatus.CREATED)
   @Post()
   @Roles(UserRole.ADMIN)
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto): Promise<UserResponse> {
+    const user: User = await this.usersService.create(createUserDto);
+
+    return plainToClass(UserResponse, user, { excludeExtraneousValues: true });
   }
 
-  @Get()
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.VIEWER)
-  findAll() {
-    return this.usersService.findAll();
-  }
-
+  @ApiOperation({ summary: 'Find user by id' })
+  @ApiResponse({ status: HttpStatus.OK, type: UserResponse })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND })
+  @HttpCode(HttpStatus.OK)
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.VIEWER)
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+  async findOne(@Param('id') id: string): Promise<UserResponse> {
+    const user: User = await this.usersService.findOne(id);
+
+    return plainToClass(UserResponse, user, { excludeExtraneousValues: true });
   }
 
+  @ApiOperation({ summary: 'Update user' })
+  @ApiResponse({ status: HttpStatus.OK, type: UserResponse })
+  @HttpCode(HttpStatus.OK)
   @Patch(':id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<UserResponse> {
+    const user: User = await this.usersService.update(id, updateUserDto);
+
+    return plainToClass(UserResponse, user, { excludeExtraneousValues: true });
   }
 
+  @ApiOperation({ summary: 'Delete user' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(UserRole.ADMIN)
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(id);
   }
 
   @Patch(':id/role')
   @Roles(UserRole.ADMIN)
-  setRole(@Param('id') id: string, @Body('role') role: UserRole) {
-    return this.usersService.setRole(id, role);
+  async setRole(
+    @Param('id') id: string,
+    @Body('role') role: UserRole,
+  ): Promise<UserResponse> {
+    const user: User = await this.usersService.setRole(id, role);
+
+    return plainToClass(UserResponse, user, { excludeExtraneousValues: true });
   }
 
   @Patch(':id/activate')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  activate(@Param('id') id: string) {
-    return this.usersService.activate(id);
+  async activate(@Param('id') id: string): Promise<UserResponse> {
+    const user: User = await this.usersService.activate(id);
+
+    return plainToClass(UserResponse, user, { excludeExtraneousValues: true });
   }
 
   @Patch(':id/deactivate')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  deactivate(@Param('id') id: string) {
-    return this.usersService.deactivate(id);
+  async deactivate(@Param('id') id: string): Promise<UserResponse> {
+    const user: User = await this.usersService.deactivate(id);
+
+    return plainToClass(UserResponse, user, { excludeExtraneousValues: true });
   }
 }

@@ -12,7 +12,6 @@ import { AuthResponseDto } from '../src/auth/types/auth.types';
 describe('AuthController (e2e)', () => {
   let app: INestApplication<App>;
   let userRepository: Repository<User>;
-  let refreshToken: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -59,11 +58,6 @@ describe('AuthController (e2e)', () => {
         .expect((res) => {
           expect(res.body).toHaveProperty('accessToken');
           expect(res.body).toHaveProperty('refreshToken');
-
-          const body = res.body as AuthResponseDto;
-
-          // Save tokens for later tests
-          refreshToken = body.refreshToken;
         });
     });
 
@@ -72,7 +66,7 @@ describe('AuthController (e2e)', () => {
         .post('/api/v1/auth/signup')
         .send({
           name: 'Another User',
-          email: 'test@example.com', // Same email as previous test
+          email: 'test@example.com',
           password: 'password123',
         })
         .expect(409);
@@ -117,7 +111,21 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('/api/v1/auth/refresh (POST)', () => {
-    it('should refresh tokens', () => {
+    const loginAndGetTokens = async (): Promise<AuthResponseDto> => {
+      const response = await request(app.getHttpServer() as Express)
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'test@example.com',
+          password: 'password123',
+        })
+        .expect(200);
+
+      return response.body as AuthResponseDto;
+    };
+
+    it('should refresh tokens', async () => {
+      const { refreshToken } = await loginAndGetTokens();
+
       return request(app.getHttpServer() as Express)
         .post('/api/v1/auth/refresh')
         .send({
