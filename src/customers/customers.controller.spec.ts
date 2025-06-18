@@ -51,7 +51,9 @@ describe('CustomersController', () => {
 
   // Mock plainToClass
   jest.mock('class-transformer', () => ({
-    plainToClass: jest.fn().mockImplementation((cls, plain) => plain),
+    plainToClass: jest
+      .fn()
+      .mockImplementation((cls: any, plain: unknown) => plain),
   }));
 
   beforeEach(async () => {

@@ -14,7 +14,7 @@ import * as path from 'path';
 jest.mock('fs');
 jest.mock('path');
 jest.mock('util', () => ({
-  promisify: jest.fn((fn) => fn),
+  promisify: jest.fn(),
 }));
 
 describe('CustomersService', () => {
