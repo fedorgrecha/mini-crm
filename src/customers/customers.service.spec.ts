@@ -8,13 +8,30 @@ import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { FilterCustomersDto } from './dto/filter-customers.dto';
 import { Like } from 'typeorm';
-import * as fs from 'fs';
-import * as path from 'path';
 
-jest.mock('fs');
-jest.mock('path');
+// Mock fs functions
+const mockMkdir = jest.fn().mockResolvedValue(undefined);
+const mockWriteFile = jest.fn().mockResolvedValue(undefined);
+const mockUnlink = jest.fn().mockResolvedValue(undefined);
+
+jest.mock('fs', () => ({
+  mkdir: jest.fn().mockResolvedValue(undefined),
+  writeFile: jest.fn().mockResolvedValue(undefined),
+  unlink: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock('path', () => ({
+  join: jest.fn().mockReturnValue('/uploads/customers/test-id/test-file.pdf'),
+}));
+
 jest.mock('util', () => ({
   promisify: jest.fn(),
+  deprecate: jest.fn(),
+}));
+
+// Mock app-root-path
+jest.mock('app-root-path', () => ({
+  path: '/mock/root/path',
 }));
 
 describe('CustomersService', () => {
@@ -345,21 +362,14 @@ describe('CustomersService', () => {
       mockCustomerFileRepository.create.mockReturnValue(mockCustomerFile);
       mockCustomerFileRepository.save.mockResolvedValue(mockCustomerFile);
 
-      // Mock fs and path functions
-      (fs.mkdir as unknown as jest.Mock).mockResolvedValue(undefined);
-      (path.join as unknown as jest.Mock).mockReturnValue(
-        '/uploads/customers/test-id/test-file.pdf',
-      );
-      (fs.writeFile as unknown as jest.Mock).mockResolvedValue(undefined);
-
       const result = await service.uploadFile('test-id', mockFile);
 
       expect(mockCustomerRepository.findOne).toHaveBeenCalledWith({
         where: { id: 'test-id' },
         relations: ['files'],
       });
-      expect(fs.mkdir).toHaveBeenCalled();
-      expect(fs.writeFile).toHaveBeenCalled();
+      expect(mockMkdir).toHaveBeenCalled();
+      expect(mockWriteFile).toHaveBeenCalled();
       expect(mockCustomerFileRepository.create).toHaveBeenCalled();
       expect(mockCustomerFileRepository.save).toHaveBeenCalled();
       expect(result).toEqual(mockCustomerFile);
@@ -379,14 +389,13 @@ describe('CustomersService', () => {
     it('should delete a file for a customer', async () => {
       mockCustomerFileRepository.findOne.mockResolvedValue(mockCustomerFile);
       mockCustomerFileRepository.remove.mockResolvedValue(undefined);
-      (fs.unlink as unknown as jest.Mock).mockResolvedValue(undefined);
 
       await service.deleteFile('test-id', 'file-id');
 
       expect(mockCustomerFileRepository.findOne).toHaveBeenCalledWith({
         where: { id: 'file-id', customerId: 'test-id' },
       });
-      expect(fs.unlink).toHaveBeenCalled();
+      expect(mockUnlink).toHaveBeenCalled();
       expect(mockCustomerFileRepository.remove).toHaveBeenCalledWith(
         mockCustomerFile,
       );

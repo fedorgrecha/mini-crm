@@ -21,6 +21,17 @@ describe('UsersController', () => {
     updatedAt: new Date(),
   };
 
+  // UserResponse object without password
+  const mockUserResponse = {
+    id: 'test-id',
+    name: 'Test User',
+    email: 'test@example.com',
+    role: UserRole.VIEWER,
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
   const mockUsersService = {
     create: jest.fn(),
     findAll: jest.fn(),
@@ -76,7 +87,7 @@ describe('UsersController', () => {
       const result = await controller.create(createUserDto);
 
       expect(mockUsersService.create).toHaveBeenCalledWith(createUserDto);
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual(mockUserResponse);
     });
   });
 
@@ -87,7 +98,7 @@ describe('UsersController', () => {
       const result = await controller.findOne('test-id');
 
       expect(mockUsersService.findOne).toHaveBeenCalledWith('test-id');
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual(mockUserResponse);
     });
   });
 
@@ -98,6 +109,7 @@ describe('UsersController', () => {
       };
 
       const updatedUser = { ...mockUser, name: 'Updated Name' };
+      const updatedUserResponse = { ...mockUserResponse, name: 'Updated Name' };
       mockUsersService.update.mockResolvedValue(updatedUser);
 
       const result = await controller.update('test-id', updateUserDto);
@@ -106,7 +118,7 @@ describe('UsersController', () => {
         'test-id',
         updateUserDto,
       );
-      expect(result).toEqual(updatedUser);
+      expect(result).toEqual(updatedUserResponse);
     });
   });
 
@@ -123,6 +135,7 @@ describe('UsersController', () => {
   describe('setRole', () => {
     it('should call usersService.setRole with id and role', async () => {
       const updatedUser = { ...mockUser, role: UserRole.ADMIN };
+      const updatedUserResponse = { ...mockUserResponse, role: UserRole.ADMIN };
       mockUsersService.setRole.mockResolvedValue(updatedUser);
 
       const result = await controller.setRole('test-id', UserRole.ADMIN);
@@ -131,31 +144,33 @@ describe('UsersController', () => {
         'test-id',
         UserRole.ADMIN,
       );
-      expect(result).toEqual(updatedUser);
+      expect(result).toEqual(updatedUserResponse);
     });
   });
 
   describe('activate', () => {
     it('should call usersService.activate with id', async () => {
       const activatedUser = { ...mockUser, active: true };
+      const activatedUserResponse = { ...mockUserResponse, active: true };
       mockUsersService.activate.mockResolvedValue(activatedUser);
 
       const result = await controller.activate('test-id');
 
       expect(mockUsersService.activate).toHaveBeenCalledWith('test-id');
-      expect(result).toEqual(activatedUser);
+      expect(result).toEqual(activatedUserResponse);
     });
   });
 
   describe('deactivate', () => {
     it('should call usersService.deactivate with id', async () => {
       const deactivatedUser = { ...mockUser, active: false };
+      const deactivatedUserResponse = { ...mockUserResponse, active: false };
       mockUsersService.deactivate.mockResolvedValue(deactivatedUser);
 
       const result = await controller.deactivate('test-id');
 
       expect(mockUsersService.deactivate).toHaveBeenCalledWith('test-id');
-      expect(result).toEqual(deactivatedUser);
+      expect(result).toEqual(deactivatedUserResponse);
     });
   });
 });

@@ -33,6 +33,18 @@ describe('CustomersController', () => {
     updatedAt: new Date(),
   };
 
+  // CustomerFileResponse object without path
+  const mockCustomerFileResponse = {
+    id: 'file-id',
+    filename: 'test-file.pdf',
+    originalname: 'original-file.pdf',
+    mimetype: 'application/pdf',
+    size: 1024,
+    customerId: 'test-id',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
   const mockCustomersService = {
     create: jest.fn(),
     findAll: jest.fn(),
@@ -205,7 +217,7 @@ describe('CustomersController', () => {
         'test-id',
         mockFile,
       );
-      expect(result).toEqual(mockCustomerFile);
+      expect(result).toEqual(mockCustomerFileResponse);
     });
   });
 
