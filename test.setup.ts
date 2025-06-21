@@ -5,6 +5,8 @@ global.process = process;
 jest.mock('glob', () => ({
   glob: jest.fn(),
   globSync: jest.fn(),
+  sync: jest.fn(),
+  Glob: jest.fn(),
 }));
 
 jest.mock('path-scurry', () => ({

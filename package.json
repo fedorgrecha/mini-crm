@@ -57,7 +57,7 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/multer": "^1.4.13",
-    "@types/node": "^22.10.7",
+    "@types/node": "^24.0.3",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
@@ -92,9 +92,11 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
-    "setupFilesAfterEnv": ["<rootDir>/../test.setup.ts"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/../test.setup.ts"
+    ],
     "transformIgnorePatterns": [
-      "node_modules/(?!(typeorm)/)"
+      "node_modules/(?!(typeorm|@nestjs/typeorm|path-scurry|glob)/)"
     ]
   }
 }
