@@ -61,6 +61,15 @@ The project includes several Docker configurations for different environments:
 
 ## Service Access
 
+### PM2 Service
+
+Nginx balancer:
+http://localhost:8080/
+
+```bash
+docker compose exec pm2 pm2 list
+```
+
 ### Local Development
 
 - **Application**: http://localhost:3000

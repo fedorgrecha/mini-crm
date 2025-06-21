@@ -27,7 +27,7 @@ async function bootstrap(): Promise<void> {
 
   SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, config));
 
-  const port = process.env.APP_PORT ?? 3000;
+  const port = process.env.APP_PORT ?? '3000';
   const host = process.env.APP_HOST || '0.0.0.0';
 
   console.log(`Application is running on: http://${host}:${port}`);

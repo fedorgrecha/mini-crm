@@ -3,7 +3,7 @@ import { CreateAdminCommand } from './commands/create-admin.command';
 import { UsersModule } from '../users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { typeOrmConfigFactory } from '../config/typeorm';
+import { typeOrmConfigFactory } from '../../config/typeorm';
 
 @Module({
   imports: [
