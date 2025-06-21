@@ -6,6 +6,8 @@ import { NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from './enums/userRole';
+import { FilterUsersDto } from './dto/filter-users.dto';
+import { Like } from 'typeorm';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -28,6 +30,7 @@ describe('UsersService', () => {
     save: jest.fn(),
     find: jest.fn(),
     findOne: jest.fn(),
+    findAndCount: jest.fn(),
     delete: jest.fn(),
   };
 
@@ -73,13 +76,51 @@ describe('UsersService', () => {
   });
 
   describe('findAll', () => {
-    it('should return an array of users', async () => {
-      mockRepository.find.mockResolvedValue([mockUser]);
+    it('should return paginated users', async () => {
+      const filterDto: FilterUsersDto = {
+        page: 1,
+        limit: 10,
+      };
 
-      const result = await service.findAll();
+      mockRepository.findAndCount.mockResolvedValue([[mockUser], 1]);
 
-      expect(mockRepository.find).toHaveBeenCalled();
-      expect(result).toEqual([mockUser]);
+      const result = await service.findAll(filterDto);
+
+      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
+        where: {},
+        skip: 0,
+        take: 10,
+      });
+      expect(result).toEqual({
+        items: [mockUser],
+        total: 1,
+      });
+    });
+
+    it('should apply filters when provided', async () => {
+      const filterDto: FilterUsersDto = {
+        id: 'test-id',
+        email: 'test',
+        page: 2,
+        limit: 5,
+      };
+
+      mockRepository.findAndCount.mockResolvedValue([[mockUser], 1]);
+
+      const result = await service.findAll(filterDto);
+
+      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
+        where: {
+          id: 'test-id',
+          email: Like(`%test%`),
+        },
+        skip: 5,
+        take: 5,
+      });
+      expect(result).toEqual({
+        items: [mockUser],
+        total: 1,
+      });
     });
   });
 

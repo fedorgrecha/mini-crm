@@ -4,12 +4,13 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from './enums/userRole';
+import { FilterUsersDto } from './dto/filter-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -36,8 +37,29 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+  async findAll(
+    filterDto: FilterUsersDto,
+  ): Promise<{ items: User[]; total: number }> {
+    const { id, email, page = 1, limit = 10 } = filterDto;
+    const skip = (page - 1) * limit;
+
+    const where: FindOptionsWhere<User> = {};
+
+    if (id) {
+      where.id = id;
+    }
+
+    if (email) {
+      where.email = Like(`%${email}%`);
+    }
+
+    const [items, total] = await this.usersRepository.findAndCount({
+      where,
+      skip,
+      take: limit,
+    });
+
+    return { items, total };
   }
 
   async findOne(id: string): Promise<User> {

@@ -13,6 +13,7 @@ import { FilterCustomersDto } from './dto/filter-customers.dto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
+import { isDuplicateEntryError } from '../mysql.utilities';
 
 const mkdir = promisify(fs.mkdir);
 const writeFile = promisify(fs.writeFile);
@@ -32,11 +33,12 @@ export class CustomersService {
       const customer = this.customersRepository.create(createCustomerDto);
       return await this.customersRepository.save(customer);
     } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') {
+      if (isDuplicateEntryError(error)) {
         throw new BadRequestException(
           'Customer with this email already exists',
         );
       }
+
       throw error;
     }
   }
@@ -88,9 +90,10 @@ export class CustomersService {
 
     try {
       Object.assign(customer, updateCustomerDto);
+
       return await this.customersRepository.save(customer);
     } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') {
+      if (isDuplicateEntryError(error)) {
         throw new BadRequestException(
           'Customer with this email already exists',
         );

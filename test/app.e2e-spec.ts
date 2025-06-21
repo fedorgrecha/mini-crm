@@ -28,6 +28,7 @@ describe('AppController (e2e)', () => {
         },
       }),
     );
+
     await app.init();
 
     userRepository = moduleFixture.get<Repository<User>>(

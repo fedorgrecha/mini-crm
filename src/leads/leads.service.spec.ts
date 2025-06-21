@@ -1,25 +1,36 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { LeadsService } from './leads.service';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { Lead, LeadStatus } from './entities/lead.entity';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-
-type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
-
-const createMockRepository = <T>(): MockRepository<T> => ({
-  create: jest.fn(),
-  save: jest.fn(),
-  findOne: jest.fn(),
-  findAndCount: jest.fn(),
-  remove: jest.fn(),
-});
+import { FilterLeadsDto } from './dto/filter-leads.dto';
+import { Like } from 'typeorm';
 
 describe('LeadsService', () => {
   let service: LeadsService;
-  let repository: MockRepository<Lead>;
+
+  const mockLead: Lead = {
+    id: 'test-id',
+    title: 'Test Lead',
+    clientName: 'John Doe',
+    clientEmail: 'john@example.com',
+    clientPhone: '1234567890',
+    description: 'Test description',
+    status: LeadStatus.NEW,
+    value: 1000,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const mockLeadRepository = {
+    create: jest.fn(),
+    save: jest.fn(),
+    findAndCount: jest.fn(),
+    findOne: jest.fn(),
+    remove: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -27,13 +38,16 @@ describe('LeadsService', () => {
         LeadsService,
         {
           provide: getRepositoryToken(Lead),
-          useValue: createMockRepository(),
+          useValue: mockLeadRepository,
         },
       ],
     }).compile();
 
     service = module.get<LeadsService>(LeadsService);
-    repository = module.get<MockRepository<Lead>>(getRepositoryToken(Lead));
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -41,7 +55,7 @@ describe('LeadsService', () => {
   });
 
   describe('create', () => {
-    it('should create a new lead', async () => {
+    it('should create and return a lead', async () => {
       const createLeadDto: CreateLeadDto = {
         title: 'Test Lead',
         clientName: 'John Doe',
@@ -49,201 +63,253 @@ describe('LeadsService', () => {
         clientPhone: '1234567890',
       };
 
-      const lead = {
-        id: 'test-id',
-        ...createLeadDto,
-        status: LeadStatus.NEW,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      repository.create.mockReturnValue(lead);
-      repository.save.mockResolvedValue(lead);
+      mockLeadRepository.create.mockReturnValue(mockLead);
+      mockLeadRepository.save.mockResolvedValue(mockLead);
 
       const result = await service.create(createLeadDto);
-      expect(result).toEqual(lead);
-      expect(repository.create).toHaveBeenCalledWith(createLeadDto);
-      expect(repository.save).toHaveBeenCalledWith(lead);
+
+      expect(mockLeadRepository.create).toHaveBeenCalledWith(createLeadDto);
+      expect(mockLeadRepository.save).toHaveBeenCalledWith(mockLead);
+      expect(result).toEqual(mockLead);
     });
   });
 
   describe('findAll', () => {
-    it('should return an array of leads and count', async () => {
-      const leads = [
-        {
-          id: 'test-id-1',
-          title: 'Test Lead 1',
-          clientName: 'John Doe',
-          status: LeadStatus.NEW,
-        },
-        {
-          id: 'test-id-2',
-          title: 'Test Lead 2',
-          clientName: 'Jane Doe',
-          status: LeadStatus.IN_WORK,
-        },
-      ];
-      const total = 2;
-
-      repository.findAndCount.mockResolvedValue([leads, total]);
-
-      const result = await service.findAll({});
-      expect(result).toEqual({ items: leads, total });
-      expect(repository.findAndCount).toHaveBeenCalled();
-    });
-
-    it('should apply filters correctly', async () => {
-      const filterDto = {
-        title: 'Test',
-        clientName: 'John',
-        status: LeadStatus.NEW,
+    it('should return leads with pagination', async () => {
+      const filterDto: FilterLeadsDto = {
+        page: 1,
+        limit: 10,
       };
 
-      repository.findAndCount.mockResolvedValue([[], 0]);
+      mockLeadRepository.findAndCount.mockResolvedValue([[mockLead], 1]);
 
-      await service.findAll(filterDto);
+      const result = await service.findAll(filterDto);
 
-      expect(repository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            title: expect.anything(),
-            clientName: expect.anything(),
-            status: LeadStatus.NEW,
-          }),
-        }),
-      );
+      expect(mockLeadRepository.findAndCount).toHaveBeenCalledWith({
+        where: {},
+        skip: 0,
+        take: 10,
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+      expect(result).toEqual({ items: [mockLead], total: 1 });
+    });
+
+    it('should filter leads by id', async () => {
+      const filterDto: FilterLeadsDto = {
+        id: 'test-id',
+        page: 1,
+        limit: 10,
+      };
+
+      mockLeadRepository.findAndCount.mockResolvedValue([[mockLead], 1]);
+
+      const result = await service.findAll(filterDto);
+
+      expect(mockLeadRepository.findAndCount).toHaveBeenCalledWith({
+        where: { id: 'test-id' },
+        skip: 0,
+        take: 10,
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+      expect(result).toEqual({ items: [mockLead], total: 1 });
+    });
+
+    it('should filter leads by title', async () => {
+      const filterDto: FilterLeadsDto = {
+        title: 'Test',
+        page: 1,
+        limit: 10,
+      };
+
+      mockLeadRepository.findAndCount.mockResolvedValue([[mockLead], 1]);
+
+      const result = await service.findAll(filterDto);
+
+      expect(mockLeadRepository.findAndCount).toHaveBeenCalledWith({
+        where: { title: Like('%Test%') },
+        skip: 0,
+        take: 10,
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+      expect(result).toEqual({ items: [mockLead], total: 1 });
+    });
+
+    it('should filter leads by clientName', async () => {
+      const filterDto: FilterLeadsDto = {
+        clientName: 'John',
+        page: 1,
+        limit: 10,
+      };
+
+      mockLeadRepository.findAndCount.mockResolvedValue([[mockLead], 1]);
+
+      const result = await service.findAll(filterDto);
+
+      expect(mockLeadRepository.findAndCount).toHaveBeenCalledWith({
+        where: { clientName: Like('%John%') },
+        skip: 0,
+        take: 10,
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+      expect(result).toEqual({ items: [mockLead], total: 1 });
+    });
+
+    it('should filter leads by status', async () => {
+      const filterDto: FilterLeadsDto = {
+        status: LeadStatus.NEW,
+        page: 1,
+        limit: 10,
+      };
+
+      mockLeadRepository.findAndCount.mockResolvedValue([[mockLead], 1]);
+
+      const result = await service.findAll(filterDto);
+
+      expect(mockLeadRepository.findAndCount).toHaveBeenCalledWith({
+        where: { status: LeadStatus.NEW },
+        skip: 0,
+        take: 10,
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+      expect(result).toEqual({ items: [mockLead], total: 1 });
     });
   });
 
   describe('findOne', () => {
-    it('should return a lead if found', async () => {
-      const lead = {
-        id: 'test-id',
-        title: 'Test Lead',
-        clientName: 'John Doe',
-        status: LeadStatus.NEW,
-      };
-
-      repository.findOne.mockResolvedValue(lead);
+    it('should return a lead when lead exists', async () => {
+      mockLeadRepository.findOne.mockResolvedValue(mockLead);
 
       const result = await service.findOne('test-id');
-      expect(result).toEqual(lead);
-      expect(repository.findOne).toHaveBeenCalledWith({
+
+      expect(mockLeadRepository.findOne).toHaveBeenCalledWith({
         where: { id: 'test-id' },
       });
+      expect(result).toEqual(mockLead);
     });
 
-    it('should throw NotFoundException if lead not found', async () => {
-      repository.findOne.mockResolvedValue(null);
+    it('should throw NotFoundException when lead does not exist', async () => {
+      mockLeadRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne('test-id')).rejects.toThrow(
+      await expect(service.findOne('non-existent-id')).rejects.toThrow(
         NotFoundException,
       );
     });
   });
 
   describe('update', () => {
-    it('should update a lead', async () => {
+    it('should update and return a lead', async () => {
       const updateLeadDto: UpdateLeadDto = {
         title: 'Updated Lead',
       };
 
-      const existingLead = {
-        id: 'test-id',
-        title: 'Test Lead',
-        clientName: 'John Doe',
-        status: LeadStatus.NEW,
-      };
+      const updatedLead = { ...mockLead, title: 'Updated Lead' };
 
-      const updatedLead = {
-        ...existingLead,
-        ...updateLeadDto,
-      };
-
-      repository.findOne.mockResolvedValue(existingLead);
-      repository.save.mockResolvedValue(updatedLead);
+      mockLeadRepository.findOne.mockResolvedValue(mockLead);
+      mockLeadRepository.save.mockResolvedValue(updatedLead);
 
       const result = await service.update('test-id', updateLeadDto);
-      expect(result).toEqual(updatedLead);
-      expect(repository.findOne).toHaveBeenCalledWith({
+
+      expect(mockLeadRepository.findOne).toHaveBeenCalledWith({
         where: { id: 'test-id' },
       });
-      expect(repository.save).toHaveBeenCalledWith(updatedLead);
+      expect(mockLeadRepository.save).toHaveBeenCalled();
+      expect(result).toEqual(updatedLead);
+    });
+
+    it('should throw NotFoundException when lead does not exist', async () => {
+      mockLeadRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.update('non-existent-id', {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('remove', () => {
     it('should remove a lead', async () => {
-      const lead = {
-        id: 'test-id',
-        title: 'Test Lead',
-        clientName: 'John Doe',
-        status: LeadStatus.NEW,
-      };
-
-      repository.findOne.mockResolvedValue(lead);
-      repository.remove.mockResolvedValue(lead);
+      mockLeadRepository.findOne.mockResolvedValue(mockLead);
+      mockLeadRepository.remove.mockResolvedValue(undefined);
 
       await service.remove('test-id');
-      expect(repository.findOne).toHaveBeenCalledWith({
+
+      expect(mockLeadRepository.findOne).toHaveBeenCalledWith({
         where: { id: 'test-id' },
       });
-      expect(repository.remove).toHaveBeenCalledWith(lead);
+      expect(mockLeadRepository.remove).toHaveBeenCalledWith(mockLead);
+    });
+
+    it('should throw NotFoundException when lead does not exist', async () => {
+      mockLeadRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.remove('non-existent-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('updateStatus', () => {
     it('should update lead status from NEW to IN_WORK', async () => {
-      const lead = {
-        id: 'test-id',
-        title: 'Test Lead',
-        clientName: 'John Doe',
-        status: LeadStatus.NEW,
-      };
+      const leadWithNewStatus = { ...mockLead, status: LeadStatus.NEW };
+      const updatedLead = { ...mockLead, status: LeadStatus.IN_WORK };
 
-      const updatedLead = {
-        ...lead,
-        status: LeadStatus.IN_WORK,
-      };
-
-      repository.findOne.mockResolvedValue(lead);
-      repository.save.mockResolvedValue(updatedLead);
+      mockLeadRepository.findOne.mockResolvedValue(leadWithNewStatus);
+      mockLeadRepository.save.mockResolvedValue(updatedLead);
 
       const result = await service.updateStatus('test-id', LeadStatus.IN_WORK);
+
+      expect(mockLeadRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 'test-id' },
+      });
+      expect(mockLeadRepository.save).toHaveBeenCalled();
       expect(result).toEqual(updatedLead);
-      expect(repository.save).toHaveBeenCalledWith(updatedLead);
     });
 
     it('should update lead status from IN_WORK to WON', async () => {
-      const lead = {
-        id: 'test-id',
-        title: 'Test Lead',
-        clientName: 'John Doe',
-        status: LeadStatus.IN_WORK,
-      };
+      const leadWithInWorkStatus = { ...mockLead, status: LeadStatus.IN_WORK };
+      const updatedLead = { ...mockLead, status: LeadStatus.WON };
 
-      const updatedLead = {
-        ...lead,
-        status: LeadStatus.WON,
-      };
-
-      repository.findOne.mockResolvedValue(lead);
-      repository.save.mockResolvedValue(updatedLead);
+      mockLeadRepository.findOne.mockResolvedValue(leadWithInWorkStatus);
+      mockLeadRepository.save.mockResolvedValue(updatedLead);
 
       const result = await service.updateStatus('test-id', LeadStatus.WON);
+
+      expect(mockLeadRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 'test-id' },
+      });
+      expect(mockLeadRepository.save).toHaveBeenCalled();
       expect(result).toEqual(updatedLead);
-      expect(repository.save).toHaveBeenCalledWith(updatedLead);
+    });
+
+    it('should update lead status from IN_WORK to LOST', async () => {
+      const leadWithInWorkStatus = { ...mockLead, status: LeadStatus.IN_WORK };
+      const updatedLead = { ...mockLead, status: LeadStatus.LOST };
+
+      mockLeadRepository.findOne.mockResolvedValue(leadWithInWorkStatus);
+      mockLeadRepository.save.mockResolvedValue(updatedLead);
+
+      const result = await service.updateStatus('test-id', LeadStatus.LOST);
+
+      expect(mockLeadRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 'test-id' },
+      });
+      expect(mockLeadRepository.save).toHaveBeenCalled();
+      expect(result).toEqual(updatedLead);
     });
 
     it('should throw BadRequestException when trying to move from NEW to WON', async () => {
-      const lead = {
-        id: 'test-id',
-        title: 'Test Lead',
-        clientName: 'John Doe',
-        status: LeadStatus.NEW,
-      };
+      const leadWithNewStatus = { ...mockLead, status: LeadStatus.NEW };
 
-      repository.findOne.mockResolvedValue(lead);
+      mockLeadRepository.findOne.mockResolvedValue(leadWithNewStatus);
 
       await expect(
         service.updateStatus('test-id', LeadStatus.WON),
@@ -251,18 +317,21 @@ describe('LeadsService', () => {
     });
 
     it('should throw BadRequestException when trying to move from NEW to LOST', async () => {
-      const lead = {
-        id: 'test-id',
-        title: 'Test Lead',
-        clientName: 'John Doe',
-        status: LeadStatus.NEW,
-      };
+      const leadWithNewStatus = { ...mockLead, status: LeadStatus.NEW };
 
-      repository.findOne.mockResolvedValue(lead);
+      mockLeadRepository.findOne.mockResolvedValue(leadWithNewStatus);
 
       await expect(
         service.updateStatus('test-id', LeadStatus.LOST),
       ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw NotFoundException when lead does not exist', async () => {
+      mockLeadRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.updateStatus('non-existent-id', LeadStatus.IN_WORK),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

@@ -9,23 +9,45 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FilterUsersDto } from './dto/filter-users.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from './enums/userRole';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 import { UserResponse } from './types/user.type';
 import { plainToClass } from 'class-transformer';
 
+@ApiTags('users')
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({ status: HttpStatus.OK, type: [UserResponse] })
+  @HttpCode(HttpStatus.OK)
+  @Get()
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async findAll(
+    @Query() filterDto: FilterUsersDto,
+  ): Promise<{ items: UserResponse[]; total: number }> {
+    const { items, total } = await this.usersService.findAll(filterDto);
+    return {
+      items: items.map((user) =>
+        plainToClass(UserResponse, user, {
+          excludeExtraneousValues: true,
+        }),
+      ),
+      total,
+    };
+  }
 
   @ApiOperation({ summary: 'Create user' })
   @ApiResponse({ status: HttpStatus.CREATED, type: UserResponse })

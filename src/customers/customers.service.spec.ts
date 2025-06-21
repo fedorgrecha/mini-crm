@@ -346,11 +346,11 @@ describe('CustomersService', () => {
       mockCustomerFileRepository.save.mockResolvedValue(mockCustomerFile);
 
       // Mock fs and path functions
-      (fs.mkdir as jest.Mock).mockResolvedValue(undefined);
-      (path.join as jest.Mock).mockReturnValue(
+      (fs.mkdir as unknown as jest.Mock).mockResolvedValue(undefined);
+      (path.join as unknown as jest.Mock).mockReturnValue(
         '/uploads/customers/test-id/test-file.pdf',
       );
-      (fs.writeFile as jest.Mock).mockResolvedValue(undefined);
+      (fs.writeFile as unknown as jest.Mock).mockResolvedValue(undefined);
 
       const result = await service.uploadFile('test-id', mockFile);
 
@@ -379,7 +379,7 @@ describe('CustomersService', () => {
     it('should delete a file for a customer', async () => {
       mockCustomerFileRepository.findOne.mockResolvedValue(mockCustomerFile);
       mockCustomerFileRepository.remove.mockResolvedValue(undefined);
-      (fs.unlink as jest.Mock).mockResolvedValue(undefined);
+      (fs.unlink as unknown as jest.Mock).mockResolvedValue(undefined);
 
       await service.deleteFile('test-id', 'file-id');
 
