@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { AppResolver } from './app.resolver';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
@@ -12,6 +13,7 @@ import { UsersModule } from '../users/users.module';
 import { CustomersModule } from '../customers/customers.module';
 import { LeadsModule } from '../leads/leads.module';
 import { typeOrmConfigFactory } from '../../config/typeorm';
+import * as redisStore from 'cache-manager-redis-store';
 
 @Module({
   imports: [
@@ -30,6 +32,18 @@ import { typeOrmConfigFactory } from '../../config/typeorm';
       playground: true,
       graphiql: true,
       introspection: true,
+    }),
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        store: redisStore,
+        host: configService.get('REDIS_HOST'),
+        port: configService.get('REDIS_PORT'),
+        password: configService.get('REDIS_PASSWORD'),
+        ttl: 60,
+        isGlobal: true,
+      }),
     }),
     AuthModule,
     UsersModule,

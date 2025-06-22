@@ -16,7 +16,10 @@ import {
   MaxFileSizeValidator,
   StreamableFile,
   NotFoundException,
+  Inject,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiOperation,
@@ -41,12 +44,16 @@ import { CustomerFile } from './entities/customer-file.entity';
 import { CustomFileTypeValidator } from './validatiors/file-type.validator';
 import { memoryStorage } from 'multer';
 import { createReadStream, existsSync } from 'fs';
+import { CacheTTL } from '@nestjs/common/cache';
 
 @ApiTags('customers')
 @Controller('customers')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class CustomersController {
-  constructor(private readonly customersService: CustomersService) {}
+  constructor(
+    private readonly customersService: CustomersService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   @ApiOperation({ summary: 'Create customer' })
   @ApiResponse({ status: HttpStatus.CREATED, type: CustomerResponse })
@@ -68,11 +75,24 @@ export class CustomersController {
   @HttpCode(HttpStatus.OK)
   @Get()
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @CacheTTL(60)
   async findAll(
     @Query() filterDto: FilterCustomersDto,
   ): Promise<{ items: CustomerResponse[]; total: number }> {
+    // Create a cache key based on the query parameters
+    const cacheKey = `customers_${JSON.stringify(filterDto)}`;
+
+    // Try to get data from cache
+    const cachedData = await this.cacheManager.get(cacheKey);
+
+    if (cachedData) {
+      return cachedData as { items: CustomerResponse[]; total: number };
+    }
+
+    // If not in cache, get from service
     const { items, total } = await this.customersService.findAll(filterDto);
-    return {
+
+    const result = {
       items: items.map((customer) =>
         plainToClass(CustomerResponse, customer, {
           excludeExtraneousValues: true,
@@ -80,6 +100,12 @@ export class CustomersController {
       ),
       total,
     };
+
+    // Store in cache
+    // 60 seconds in milliseconds
+    await this.cacheManager.set(cacheKey, result, 60_000);
+
+    return result;
   }
 
   @ApiOperation({ summary: 'Get customer by id' })
