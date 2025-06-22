@@ -1,9 +1,9 @@
 import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/enums/userRole';
+import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { LeadsService } from './leads.service';
 import { Lead as LeadModel, LeadsResponse } from './models/lead.model';
 import {
@@ -15,7 +15,7 @@ import { Lead, LeadStatus } from './entities/lead.entity';
 import { plainToClass } from 'class-transformer';
 
 @Resolver(() => LeadModel)
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(GqlAuthGuard, RolesGuard)
 export class LeadsResolver {
   constructor(private readonly leadsService: LeadsService) {}
 
