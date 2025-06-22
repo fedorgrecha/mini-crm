@@ -17,6 +17,8 @@ RUN npm run build
 
 FROM node:20-alpine AS local
 
+RUN apk add --no-cache bash
+
 WORKDIR /app
 
 COPY package*.json ./
@@ -31,6 +33,8 @@ CMD ["npm", "run", "start:dev"]
 
 FROM node:20-alpine AS pm2
 
+RUN apk add --no-cache bash
+
 RUN npm install pm2 -g
 
 WORKDIR /app
@@ -44,7 +48,7 @@ COPY ecosystem.config.js ./
 
 RUN mkdir -p /app/logs
 
-EXPOSE 3002-3020
+EXPOSE 3002
 
 #RUN echo "global.crypto = require('crypto');" > /app/crypto-polyfill.js
 

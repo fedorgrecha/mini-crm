@@ -7,6 +7,9 @@ module.exports = {
     kill_timeout: 5000,
     wait_ready: true,
     listen_timeout: 10000,
+    max_restarts: 5,
+    min_uptime: '10s',
+    restart_delay: 2000,
     env: {
       NODE_ENV: 'development',
       APP_PORT: 3002,
