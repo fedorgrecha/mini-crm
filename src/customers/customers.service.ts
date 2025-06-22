@@ -131,6 +131,21 @@ export class CustomersService {
     return await this.customersRepository.save(customer);
   }
 
+  async getFile(customerId: string, fileId: string): Promise<CustomerFile> {
+    const file = await this.customerFilesRepository.findOne({
+      where: { id: fileId, customerId },
+      relations: ['customer'],
+    });
+
+    if (!file) {
+      throw new NotFoundException(
+        `File with ID ${fileId} not found for customer ${customerId}`,
+      );
+    }
+
+    return file;
+  }
+
   async uploadFile(
     customerId: string,
     file: Express.Multer.File,

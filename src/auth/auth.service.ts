@@ -79,10 +79,14 @@ export class AuthService {
       role: user.role,
     };
 
+    const jwtExpiresIn = this.configService.get<string>(
+      'JWT_REFRESH_EXPIRES_IN',
+    );
+
     const accessToken = this.jwtService.sign(payload);
+
     const refreshToken = this.jwtService.sign(payload, {
-      expiresIn: '7d',
-      secret: this.configService.get<string>('JWT_SECRET'),
+      expiresIn: jwtExpiresIn,
     });
 
     return { accessToken, refreshToken };

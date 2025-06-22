@@ -11,7 +11,7 @@ import { RouterModule } from '@nestjs/core';
   imports: [
     TypeOrmModule.forFeature([Customer, CustomerFile]),
     MulterModule.register({
-      dest: './uploads',
+      dest: './uploads/customers',
     }),
     RouterModule.register([
       {

@@ -39,6 +39,7 @@ export class UsersController {
     @Query() filterDto: FilterUsersDto,
   ): Promise<{ items: UserResponse[]; total: number }> {
     const { items, total } = await this.usersService.findAll(filterDto);
+
     return {
       items: items.map((user) =>
         plainToClass(UserResponse, user, {
@@ -95,6 +96,7 @@ export class UsersController {
     return this.usersService.remove(id);
   }
 
+  @ApiResponse({ status: HttpStatus.OK, type: UserResponse })
   @Patch(':id/role')
   @Roles(UserRole.ADMIN)
   async setRole(

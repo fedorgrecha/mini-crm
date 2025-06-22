@@ -1,10 +1,10 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
+import { config } from 'dotenv';
+import { join as pathJoin } from 'path';
 
-dotenv.config();
+config();
 
 const baseConfig = {
   type: 'mysql' as const,
@@ -13,10 +13,10 @@ const baseConfig = {
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [path.join(__dirname, '../**/*.entity{.ts,.js}')],
-  migrations: [path.join(__dirname, '../migrations/*{.ts,.js}')],
-  synchronize: process.env.NODE_ENV === 'development',
-  logging: process.env.NODE_ENV === 'development',
+  entities: [pathJoin(__dirname, '../src/**/*.entity{.ts,.js}')],
+  migrations: [pathJoin(__dirname, '../migrations/*{.ts,.js}')],
+  synchronize: false,
+  logging: false,
 };
 
 export const typeOrmConfigFactory = (
@@ -29,10 +29,11 @@ export const typeOrmConfigFactory = (
   username: configService.get('DB_USERNAME'),
   password: configService.get('DB_PASSWORD'),
   database: configService.get('DB_DATABASE'),
-  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  synchronize: configService.get('NODE_ENV') === 'development',
+  entities: [__dirname + '/../src/**/*.entity{.ts,.js}'],
+  synchronize: configService.get('NODE_ENV') === 'test',
+  logging: process.env.NODE_ENV === 'development',
+  migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+  migrationsRun: true,
 });
 
-baseConfig.logging = false;
-
-export const AppDataSource = new DataSource(baseConfig);
+export default new DataSource(baseConfig);

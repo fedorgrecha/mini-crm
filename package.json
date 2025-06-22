@@ -9,18 +9,28 @@
     "clean": "rimraf dist || rm -rf dist",
     "build": "npm run clean && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "typeorm": "ts-node ./node_modules/typeorm/cli",
-    "migration:run": "npm run typeorm migration:run -- -d ./src/config/typeorm.ts",
+
+    "typeorm": "typeorm-ts-node-commonjs -d ./config/typeorm.ts",
+    "typeorm:migration:generate": "npm run typeorm -- migration:generate",
+    "typeorm:migration:create": "npm run typeorm -- migration:create",
+    "typeorm:migration:run": "npm run typeorm -- migration:run",
+    "typeorm:migration:revert": "npm run typeorm -- migration:revert",
+
+    "migration:run": "npm run typeorm migration:run",
+
     "admin:create": "ts-node src/cli.ts create-admin"
   },
   "dependencies": {

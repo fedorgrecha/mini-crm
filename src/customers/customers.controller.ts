@@ -14,7 +14,8 @@ import {
   UploadedFile,
   ParseFilePipe,
   MaxFileSizeValidator,
-  FileTypeValidator,
+  StreamableFile,
+  NotFoundException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -37,6 +38,9 @@ import { CustomerResponse } from './types/customer.type';
 import { CustomerFileResponse } from './types/customer-file.type';
 import { Customer } from './entities/customer.entity';
 import { CustomerFile } from './entities/customer-file.entity';
+import { CustomFileTypeValidator } from './validatiors/file-type.validator';
+import { memoryStorage } from 'multer';
+import { createReadStream, existsSync } from 'fs';
 
 @ApiTags('customers')
 @Controller('customers')
@@ -142,6 +146,36 @@ export class CustomersController {
     });
   }
 
+  @ApiOperation({ summary: 'Download customer file' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'File downloaded successfully',
+  })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'File not found' })
+  @Get(':customerId/files/:fileId/download')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async downloadFile(
+    @Param('customerId') customerId: string,
+    @Param('fileId') fileId: string,
+  ): Promise<StreamableFile> {
+    const file = await this.customersService.getFile(customerId, fileId);
+
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    if (!existsSync(file.path)) {
+      throw new NotFoundException('File not found on disk');
+    }
+
+    const fileStream = createReadStream(file.path);
+
+    return new StreamableFile(fileStream, {
+      type: file.mimetype,
+      disposition: `attachment; filename="${file.originalname}"`,
+    });
+  }
+
   @ApiOperation({ summary: 'Upload file for customer' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -159,14 +193,28 @@ export class CustomersController {
   @HttpCode(HttpStatus.CREATED)
   @Post(':id/files')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+    }),
+  )
   async uploadFile(
     @Param('id') id: string,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
-          new FileTypeValidator({ fileType: /(pdf|doc|docx|jpg|jpeg|png)$/ }),
+          new CustomFileTypeValidator({
+            allowedMimeTypes: [
+              'application/pdf',
+              'application/msword',
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+              'image/jpeg',
+              'image/jpg',
+              'image/png',
+            ],
+            allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
+          }),
         ],
       }),
     )
@@ -176,6 +224,7 @@ export class CustomersController {
       id,
       file,
     );
+
     return plainToClass(CustomerFileResponse, customerFile, {
       excludeExtraneousValues: true,
     });
