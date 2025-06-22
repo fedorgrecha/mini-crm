@@ -1,4 +1,4 @@
-import { Command, CommandRunner } from 'nest-commander';
+import { Command, CommandRunner, Option } from 'nest-commander';
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '../../users/users.service';
 import { UserRole } from '../../users/enums/userRole';
@@ -20,9 +20,6 @@ export class CreateAdminCommand extends CommandRunner {
     passedParams: string[],
     options?: CreateAdminCommandOptions,
   ): Promise<void> {
-    console.log('=== Create Admin Command ===');
-    console.log(passedParams);
-
     try {
       if (!options?.name || !options?.email || !options?.password) {
         console.error('Name, email, and password are required');
@@ -42,5 +39,29 @@ export class CreateAdminCommand extends CommandRunner {
     } catch (error) {
       console.error('Failed to create admin user:', error);
     }
+  }
+
+  @Option({
+    flags: '-n, --name [name]',
+    description: 'Admin name',
+  })
+  parseNameOption(value: string): string {
+    return value;
+  }
+
+  @Option({
+    flags: '-e, --email [email]',
+    description: 'Admin email',
+  })
+  parseEmailOption(value: string): string {
+    return value;
+  }
+
+  @Option({
+    flags: '-p, --password [password]',
+    description: 'Admin password',
+  })
+  parsePasswordOption(value: string): string {
+    return value;
   }
 }

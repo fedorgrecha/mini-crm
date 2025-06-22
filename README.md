@@ -9,6 +9,7 @@ A NestJS-based CRM application with Docker configurations for local development,
 - WebSockets for real-time communication
 - BullMQ for queue management
 - Mailhog for email testing
+- GraphQL API with playground
 
 ## Docker Setup
 
@@ -74,6 +75,7 @@ docker compose exec pm2 pm2 list
 
 - **Application**: http://localhost:3000
 - **Swagger API**: http://localhost:3000/docs
+- **GraphQL Playground**: http://localhost:3000/graphql
 - **WebSockets**: ws://localhost:3001
 - **MySQL**: localhost:3306
 - **Redis**: localhost:6379
@@ -89,6 +91,40 @@ docker compose exec pm2 pm2 list
 ## Custom Configuration
 
 You can create a `docker-compose.override.yml` file for local customizations (this file is ignored by git).
+
+## GraphQL API
+
+The application includes a GraphQL API with a playground for testing queries.
+
+### GraphQL Playground
+
+Access the GraphQL playground at:
+```
+http://localhost:3000/graphql
+```
+
+This interactive interface allows you to:
+- Explore the GraphQL schema
+- Write and execute queries
+- View query results
+- Access documentation
+
+### Example Query
+
+Try this simple query in the playground:
+```graphql
+{
+  hello
+}
+```
+
+### Using GraphQL in Your Application
+
+To create new GraphQL types and resolvers:
+
+1. Create a new resolver file (e.g., `users.resolver.ts`)
+2. Define your GraphQL types using decorators
+3. Implement resolver methods for queries and mutations
 
 ## CLI Commands
 

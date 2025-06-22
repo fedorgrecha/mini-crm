@@ -1,0 +1,78 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateLeadInput {
+  clientEmail: String
+  clientName: String!
+  clientPhone: String
+  description: String
+  status: LeadStatus
+  title: String!
+  value: Float
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input FilterLeadsInput {
+  clientName: String
+  id: String
+  limit: Int = 10
+  page: Int = 1
+  status: LeadStatus
+  title: String
+}
+
+type Lead {
+  clientEmail: String
+  clientName: String!
+  clientPhone: String
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  status: LeadStatus!
+  title: String!
+  updatedAt: DateTime!
+  value: Float
+}
+
+"""The status of a lead"""
+enum LeadStatus {
+  IN_WORK
+  LOST
+  NEW
+  WON
+}
+
+type LeadsResponse {
+  items: [Lead!]!
+  total: Float!
+}
+
+type Mutation {
+  createLead(input: CreateLeadInput!): Lead!
+  markLeadAsLost(id: ID!): Lead!
+  markLeadAsWon(id: ID!): Lead!
+  moveLeadToInWork(id: ID!): Lead!
+  removeLead(id: ID!): Boolean!
+  updateLead(id: ID!, input: UpdateLeadInput!): Lead!
+}
+
+type Query {
+  hello: String!
+  lead(id: ID!): Lead!
+  leads(filter: FilterLeadsInput): LeadsResponse!
+}
+
+input UpdateLeadInput {
+  clientEmail: String
+  clientName: String
+  clientPhone: String
+  description: String
+  status: LeadStatus
+  title: String
+  value: Float
+}

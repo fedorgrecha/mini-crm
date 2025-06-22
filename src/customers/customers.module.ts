@@ -5,6 +5,7 @@ import { CustomersService } from './customers.service';
 import { CustomersController } from './customers.controller';
 import { Customer } from './entities/customer.entity';
 import { CustomerFile } from './entities/customer-file.entity';
+import { RouterModule } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -12,6 +13,12 @@ import { CustomerFile } from './entities/customer-file.entity';
     MulterModule.register({
       dest: './uploads',
     }),
+    RouterModule.register([
+      {
+        path: 'api/v1',
+        module: CustomersModule,
+      },
+    ]),
   ],
   controllers: [CustomersController],
   providers: [CustomersService],

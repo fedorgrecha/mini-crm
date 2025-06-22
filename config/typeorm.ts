@@ -33,4 +33,6 @@ export const typeOrmConfigFactory = (
   synchronize: configService.get('NODE_ENV') === 'development',
 });
 
+baseConfig.logging = false;
+
 export const AppDataSource = new DataSource(baseConfig);

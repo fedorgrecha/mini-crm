@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
+import { AppModule } from '../src/app/app.module';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../src/users/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -112,7 +112,7 @@ describe('UsersController (e2e)', () => {
   describe('/users (POST)', () => {
     it('should create a new user when authenticated as admin', async () => {
       const response = await request(app.getHttpServer() as Express)
-        .post('/users')
+        .post('/api/v1/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           name: 'Test User',
@@ -133,7 +133,7 @@ describe('UsersController (e2e)', () => {
 
     it('should return 403 when authenticated as manager', () => {
       return request(app.getHttpServer() as Express)
-        .post('/users')
+        .post('/api/v1/users')
         .set('Authorization', `Bearer ${managerToken}`)
         .send({
           name: 'Another User',
@@ -145,7 +145,7 @@ describe('UsersController (e2e)', () => {
 
     it('should return 403 when authenticated as viewer', () => {
       return request(app.getHttpServer() as Express)
-        .post('/users')
+        .post('/api/v1/users')
         .set('Authorization', `Bearer ${viewerToken}`)
         .send({
           name: 'Another User',
@@ -157,7 +157,7 @@ describe('UsersController (e2e)', () => {
 
     it('should return 401 when not authenticated', () => {
       return request(app.getHttpServer() as Express)
-        .post('/users')
+        .post('/api/v1/users')
         .send({
           name: 'Another User',
           email: 'another@example.com',
@@ -170,7 +170,7 @@ describe('UsersController (e2e)', () => {
   describe('/users/:id (GET)', () => {
     it('should return a user when authenticated as admin', async () => {
       const response = await request(app.getHttpServer() as Express)
-        .get(`/users/${userId}`)
+        .get(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -182,7 +182,7 @@ describe('UsersController (e2e)', () => {
 
     it('should return a user when authenticated as manager', async () => {
       const response = await request(app.getHttpServer() as Express)
-        .get(`/users/${userId}`)
+        .get(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${managerToken}`)
         .expect(200);
 
@@ -194,7 +194,7 @@ describe('UsersController (e2e)', () => {
 
     it('should return a user when authenticated as viewer', async () => {
       const response = await request(app.getHttpServer() as Express)
-        .get(`/users/${userId}`)
+        .get(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${viewerToken}`)
         .expect(200);
 
@@ -206,13 +206,13 @@ describe('UsersController (e2e)', () => {
 
     it('should return 401 when not authenticated', () => {
       return request(app.getHttpServer() as Express)
-        .get(`/users/${userId}`)
+        .get(`/api/v1/users/${userId}`)
         .expect(401);
     });
 
     it('should return 404 when user does not exist', () => {
       return request(app.getHttpServer() as Express)
-        .get('/users/non-existent-id')
+        .get('/api/v1/users/non-existent-id')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(404);
     });
@@ -221,7 +221,7 @@ describe('UsersController (e2e)', () => {
   describe('/users/:id (PATCH)', () => {
     it('should update a user when authenticated as admin', async () => {
       const response = await request(app.getHttpServer() as Express)
-        .patch(`/users/${userId}`)
+        .patch(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           name: 'Updated Name',
@@ -237,7 +237,7 @@ describe('UsersController (e2e)', () => {
 
     it('should update a user when authenticated as manager', async () => {
       const response = await request(app.getHttpServer() as Express)
-        .patch(`/users/${userId}`)
+        .patch(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${managerToken}`)
         .send({
           name: 'Manager Updated Name',
@@ -253,7 +253,7 @@ describe('UsersController (e2e)', () => {
 
     it('should return 403 when authenticated as viewer', () => {
       return request(app.getHttpServer() as Express)
-        .patch(`/users/${userId}`)
+        .patch(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${viewerToken}`)
         .send({
           name: 'Viewer Updated Name',
@@ -263,7 +263,7 @@ describe('UsersController (e2e)', () => {
 
     it('should return 401 when not authenticated', () => {
       return request(app.getHttpServer() as Express)
-        .patch(`/users/${userId}`)
+        .patch(`/api/v1/users/${userId}`)
         .send({
           name: 'Unauthenticated Updated Name',
         })
@@ -274,7 +274,7 @@ describe('UsersController (e2e)', () => {
   describe('/users/:id/role (PATCH)', () => {
     it('should set user role when authenticated as admin', async () => {
       const response = await request(app.getHttpServer() as Express)
-        .patch(`/users/${userId}/role`)
+        .patch(`/api/v1/users/${userId}/role`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           role: UserRole.MANAGER,
@@ -290,7 +290,7 @@ describe('UsersController (e2e)', () => {
 
     it('should return 403 when authenticated as manager', () => {
       return request(app.getHttpServer() as Express)
-        .patch(`/users/${userId}/role`)
+        .patch(`/api/v1/users/${userId}/role`)
         .set('Authorization', `Bearer ${managerToken}`)
         .send({
           role: UserRole.ADMIN,
@@ -300,7 +300,7 @@ describe('UsersController (e2e)', () => {
 
     it('should return 403 when authenticated as viewer', () => {
       return request(app.getHttpServer() as Express)
-        .patch(`/users/${userId}/role`)
+        .patch(`/api/v1/users/${userId}/role`)
         .set('Authorization', `Bearer ${viewerToken}`)
         .send({
           role: UserRole.ADMIN,
@@ -310,7 +310,7 @@ describe('UsersController (e2e)', () => {
 
     it('should return 401 when not authenticated', () => {
       return request(app.getHttpServer() as Express)
-        .patch(`/users/${userId}/role`)
+        .patch(`/api/v1/users/${userId}/role`)
         .send({
           role: UserRole.ADMIN,
         })
@@ -321,7 +321,7 @@ describe('UsersController (e2e)', () => {
   describe('/users/:id/activate and /users/:id/deactivate (PATCH)', () => {
     it('should deactivate a user when authenticated as admin', async () => {
       const response = await request(app.getHttpServer() as Express)
-        .patch(`/users/${userId}/deactivate`)
+        .patch(`/api/v1/users/${userId}/deactivate`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -334,7 +334,7 @@ describe('UsersController (e2e)', () => {
 
     it('should activate a user when authenticated as manager', async () => {
       const response = await request(app.getHttpServer() as Express)
-        .patch(`/users/${userId}/activate`)
+        .patch(`/api/v1/users/${userId}/activate`)
         .set('Authorization', `Bearer ${managerToken}`)
         .expect(200);
 
@@ -347,14 +347,14 @@ describe('UsersController (e2e)', () => {
 
     it('should return 403 when authenticated as viewer', () => {
       return request(app.getHttpServer() as Express)
-        .patch(`/users/${userId}/deactivate`)
+        .patch(`/api/v1/users/${userId}/deactivate`)
         .set('Authorization', `Bearer ${viewerToken}`)
         .expect(403);
     });
 
     it('should return 401 when not authenticated', () => {
       return request(app.getHttpServer() as Express)
-        .patch(`/users/${userId}/activate`)
+        .patch(`/api/v1/users/${userId}/activate`)
         .expect(401);
     });
   });
@@ -362,34 +362,34 @@ describe('UsersController (e2e)', () => {
   describe('/users/:id (DELETE)', () => {
     it('should return 403 when authenticated as manager', () => {
       return request(app.getHttpServer() as Express)
-        .delete(`/users/${userId}`)
+        .delete(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${managerToken}`)
         .expect(403);
     });
 
     it('should return 403 when authenticated as viewer', () => {
       return request(app.getHttpServer() as Express)
-        .delete(`/users/${userId}`)
+        .delete(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${viewerToken}`)
         .expect(403);
     });
 
     it('should return 401 when not authenticated', () => {
       return request(app.getHttpServer() as Express)
-        .delete(`/users/${userId}`)
+        .delete(`/api/v1/users/${userId}`)
         .expect(401);
     });
 
     it('should delete a user when authenticated as admin', () => {
       return request(app.getHttpServer() as Express)
-        .delete(`/users/${userId}`)
+        .delete(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(204);
     });
 
     it('should return 404 when trying to get deleted user', () => {
       return request(app.getHttpServer() as Express)
-        .get(`/users/${userId}`)
+        .get(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(404);
     });
