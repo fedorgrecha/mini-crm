@@ -32,6 +32,27 @@ import * as redisStore from 'cache-manager-redis-store';
       playground: true,
       graphiql: true,
       introspection: true,
+      subscriptions: {
+        'graphql-ws': {
+          path: '/graphql',
+          onConnect: (context) => {
+            const { connectionParams, extra } = context;
+
+            // Store the auth token in the context for subscription authentication
+            if (
+              connectionParams &&
+              typeof connectionParams === 'object' &&
+              'Authorization' in connectionParams &&
+              typeof connectionParams.Authorization === 'string'
+            ) {
+              (extra as Record<string, any>).token =
+                connectionParams.Authorization.replace('Bearer ', '');
+            }
+
+            return true;
+          },
+        },
+      },
     }),
     CacheModule.registerAsync({
       imports: [ConfigModule],

@@ -2,9 +2,11 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, FindOptionsWhere } from 'typeorm';
+import { PubSub } from 'graphql-subscriptions';
 import { Lead, LeadStatus } from './entities/lead.entity';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
@@ -15,11 +17,20 @@ export class LeadsService {
   constructor(
     @InjectRepository(Lead)
     private leadsRepository: Repository<Lead>,
+    @Inject('PUB_SUB')
+    private pubSub: PubSub,
   ) {}
 
   async create(createLeadDto: CreateLeadDto): Promise<Lead> {
     const lead = this.leadsRepository.create(createLeadDto);
-    return await this.leadsRepository.save(lead);
+    const savedLead = await this.leadsRepository.save(lead);
+
+    // Publish event for lead creation
+    await this.pubSub.publish('leadCreated', {
+      leadCreated: { lead: savedLead },
+    });
+
+    return savedLead;
   }
 
   async findAll(
@@ -100,7 +111,19 @@ export class LeadsService {
       );
     }
 
+    const previousStatus = lead.status;
     lead.status = status;
-    return await this.leadsRepository.save(lead);
+    const updatedLead = await this.leadsRepository.save(lead);
+
+    // Publish event for lead status change
+    await this.pubSub.publish('leadStatusChanged', {
+      leadStatusChanged: {
+        lead: updatedLead,
+        previousStatus,
+        newStatus: status,
+      },
+    });
+
+    return updatedLead;
   }
 }

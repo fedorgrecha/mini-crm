@@ -39,12 +39,22 @@ type Lead {
   value: Float
 }
 
+type LeadCreatedEvent {
+  lead: Lead!
+}
+
 """The status of a lead"""
 enum LeadStatus {
   IN_WORK
   LOST
   NEW
   WON
+}
+
+type LeadStatusChangedEvent {
+  lead: Lead!
+  newStatus: LeadStatus!
+  previousStatus: LeadStatus!
 }
 
 type LeadsResponse {
@@ -65,6 +75,11 @@ type Query {
   hello: String!
   lead(id: ID!): Lead!
   leads(filter: FilterLeadsInput): LeadsResponse!
+}
+
+type Subscription {
+  leadCreated: LeadCreatedEvent!
+  leadStatusChanged: LeadStatusChangedEvent!
 }
 
 input UpdateLeadInput {
