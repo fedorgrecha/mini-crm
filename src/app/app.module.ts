@@ -14,6 +14,9 @@ import { CustomersModule } from '../customers/customers.module';
 import { LeadsModule } from '../leads/leads.module';
 import { typeOrmConfigFactory } from '../../config/typeorm';
 import * as redisStore from 'cache-manager-redis-store';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { GqlThrottlerGuard } from './throttler.guard';
 
 @Module({
   imports: [
@@ -66,12 +69,27 @@ import * as redisStore from 'cache-manager-redis-store';
         isGlobal: true,
       }),
     }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 1000 * 60 * 10,
+          limit: 100,
+        },
+      ],
+    }),
     AuthModule,
     UsersModule,
     CustomersModule,
     LeadsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AppResolver],
+  providers: [
+    AppService,
+    AppResolver,
+    {
+      provide: APP_GUARD,
+      useClass: GqlThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

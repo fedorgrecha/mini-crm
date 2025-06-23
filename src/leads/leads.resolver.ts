@@ -14,9 +14,11 @@ import {
 import { Lead, LeadStatus } from './entities/lead.entity';
 import { plainToClass } from 'class-transformer';
 import { CreateLeadDto } from './dto/create-lead.dto';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Resolver(() => LeadModel)
 @UseGuards(GqlAuthGuard, RolesGuard)
+@SkipThrottle()
 export class LeadsResolver {
   constructor(private readonly leadsService: LeadsService) {}
 
