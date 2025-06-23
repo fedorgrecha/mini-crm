@@ -7,7 +7,10 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, FindOptionsWhere } from 'typeorm';
 import { PubSub } from 'graphql-subscriptions';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Lead, LeadStatus } from './entities/lead.entity';
+import { LeadCreatedEvent } from './events/lead-created.event';
+import { LeadStatusChangedEvent } from './events/lead-status-changed.event';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { FilterLeadsDto } from './dto/filter-leads.dto';
@@ -19,16 +22,19 @@ export class LeadsService {
     private leadsRepository: Repository<Lead>,
     @Inject('PUB_SUB')
     private pubSub: PubSub,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async create(createLeadDto: CreateLeadDto): Promise<Lead> {
     const lead = this.leadsRepository.create(createLeadDto);
     const savedLead = await this.leadsRepository.save(lead);
 
-    // Publish event for lead creation
+    // Publish event for lead creation (GraphQL subscription)
     await this.pubSub.publish('leadCreated', {
       leadCreated: { lead: savedLead },
     });
+
+    this.eventEmitter.emit('lead.created', new LeadCreatedEvent(savedLead));
 
     return savedLead;
   }
@@ -115,7 +121,7 @@ export class LeadsService {
     lead.status = status;
     const updatedLead = await this.leadsRepository.save(lead);
 
-    // Publish event for lead status change
+    // Publish event for lead status change (GraphQL subscription)
     await this.pubSub.publish('leadStatusChanged', {
       leadStatusChanged: {
         lead: updatedLead,
@@ -123,6 +129,11 @@ export class LeadsService {
         newStatus: status,
       },
     });
+
+    this.eventEmitter.emit(
+      'lead.statusChanged',
+      new LeadStatusChangedEvent(updatedLead, previousStatus, status),
+    );
 
     return updatedLead;
   }

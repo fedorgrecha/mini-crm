@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { RolesGuard } from './guards/roles.guard';
 import { GqlAuthGuard } from './guards/gql-auth.guard';
 import { GqlSubscriptionAuthGuard } from './guards/gql-subscription-auth.guard';
+import { WsAuthGuard } from './guards/ws-auth.guard';
 import { RouterModule } from '@nestjs/core';
 
 @Module({
@@ -39,6 +40,7 @@ import { RouterModule } from '@nestjs/core';
     RolesGuard,
     GqlAuthGuard,
     GqlSubscriptionAuthGuard,
+    WsAuthGuard,
   ],
   exports: [
     AuthService,
@@ -46,6 +48,7 @@ import { RouterModule } from '@nestjs/core';
     RolesGuard,
     GqlAuthGuard,
     GqlSubscriptionAuthGuard,
+    WsAuthGuard,
     JwtModule,
     UsersModule,
   ],

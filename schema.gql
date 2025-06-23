@@ -39,7 +39,7 @@ type Lead {
   value: Float
 }
 
-type LeadCreatedEvent {
+type LeadCreatedSubscription {
   lead: Lead!
 }
 
@@ -51,7 +51,7 @@ enum LeadStatus {
   WON
 }
 
-type LeadStatusChangedEvent {
+type LeadStatusChangedSubscription {
   lead: Lead!
   newStatus: LeadStatus!
   previousStatus: LeadStatus!
@@ -78,8 +78,8 @@ type Query {
 }
 
 type Subscription {
-  leadCreated: LeadCreatedEvent!
-  leadStatusChanged: LeadStatusChangedEvent!
+  leadCreated: LeadCreatedSubscription!
+  leadStatusChanged: LeadStatusChangedSubscription!
 }
 
 input UpdateLeadInput {

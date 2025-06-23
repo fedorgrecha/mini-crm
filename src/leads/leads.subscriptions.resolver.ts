@@ -2,8 +2,8 @@ import { Resolver, Subscription } from '@nestjs/graphql';
 import { UseGuards, Inject } from '@nestjs/common';
 import { GqlSubscriptionAuthGuard } from '../auth/guards/gql-subscription-auth.guard';
 import {
-  LeadCreatedEvent,
-  LeadStatusChangedEvent,
+  LeadCreatedSubscription,
+  LeadStatusChangedSubscription,
 } from './dto/lead-subscription.dto';
 import { PubSub } from 'graphql-subscriptions';
 import { GraphQLSubscriptionContext } from '../auth/types/graphql-context.interface';
@@ -17,7 +17,7 @@ export class LeadsSubscriptionResolver {
     private pubSub: PubSub,
   ) {}
 
-  @Subscription(() => LeadCreatedEvent, {
+  @Subscription(() => LeadCreatedSubscription, {
     filter: (payload, variables, context: GraphQLSubscriptionContext) => {
       // Check if user is authenticated (context.user is set by GqlSubscriptionAuthGuard)
       return !!context.user;
@@ -28,7 +28,7 @@ export class LeadsSubscriptionResolver {
     return this.pubSub.asyncIterableIterator(['leadCreated']);
   }
 
-  @Subscription(() => LeadStatusChangedEvent, {
+  @Subscription(() => LeadStatusChangedSubscription, {
     filter: (payload, variables, context: GraphQLSubscriptionContext) => {
       // Check if user is authenticated (context.user is set by GqlSubscriptionAuthGuard)
       return !!context.user;

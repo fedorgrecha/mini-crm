@@ -18,6 +18,8 @@ import * as redisStore from 'cache-manager-redis-store';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { GqlThrottlerGuard } from './throttler.guard';
+import { BullModule } from '@nestjs/bullmq';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -28,6 +30,17 @@ import { GqlThrottlerGuard } from './throttler.guard';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: typeOrmConfigFactory,
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          host: configService.get<string>('REDIS_HOST'),
+          port: configService.get<number>('REDIS_PORT'),
+          password: configService.get<string>('REDIS_PASSWORD'),
+        },
+      }),
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -66,18 +79,19 @@ import { GqlThrottlerGuard } from './throttler.guard';
         host: configService.get('REDIS_HOST'),
         port: configService.get('REDIS_PORT'),
         password: configService.get('REDIS_PASSWORD'),
-        ttl: 60,
+        ttl: 1000 * 60, //60 seconds
         isGlobal: true,
       }),
     }),
     ThrottlerModule.forRoot({
       throttlers: [
         {
-          ttl: 1000 * 60 * 10,
+          ttl: 1000 * 60 * 10, //10 minutes
           limit: 100,
         },
       ],
     }),
+    EventEmitterModule.forRoot(),
     AuthModule,
     UsersModule,
     CustomersModule,
