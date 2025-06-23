@@ -10,6 +10,7 @@ A NestJS-based CRM application with Docker configurations for local development,
 - BullMQ for queue management
 - Mailhog for email testing
 - GraphQL API with playground
+- Security features: Helmet, CORS, CSRF protection
 
 ## Docker Setup
 
@@ -125,6 +126,45 @@ To create new GraphQL types and resolvers:
 1. Create a new resolver file (e.g., `users.resolver.ts`)
 2. Define your GraphQL types using decorators
 3. Implement resolver methods for queries and mutations
+
+## Security Features
+
+The application includes several security features to protect against common web vulnerabilities:
+
+### Helmet
+
+Helmet helps secure the application by setting various HTTP headers. It protects against:
+- Cross-Site Scripting (XSS) attacks
+- Clickjacking
+- MIME type sniffing
+- And other security vulnerabilities
+
+### CORS (Cross-Origin Resource Sharing)
+
+CORS is configured with a whitelist to control which domains can access the API:
+- Only specified origins in the `CORS_ORIGINS` environment variable can access the API
+- Set multiple origins by separating them with commas (e.g., `http://localhost:3000,https://example.com`)
+- By default, only `http://localhost:3000` is allowed
+
+### CSRF Protection
+
+CSRF (Cross-Site Request Forgery) protection is implemented for cookie-based sessions:
+- A CSRF token is required for mutating operations
+- Get a CSRF token from the `/csrf/token` endpoint
+- Include the token in the `X-CSRF-Token` header for GraphQL mutations
+
+#### Using CSRF Protection with GraphQL
+
+1. Get a CSRF token:
+   ```
+   GET /csrf/token
+   ```
+
+2. Include the token in your GraphQL requests:
+   ```
+   POST /graphql
+   X-CSRF-Token: your-csrf-token
+   ```
 
 ## CLI Commands
 

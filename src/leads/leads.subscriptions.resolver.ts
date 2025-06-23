@@ -7,8 +7,10 @@ import {
 } from './dto/lead-subscription.dto';
 import { PubSub } from 'graphql-subscriptions';
 import { GraphQLSubscriptionContext } from '../auth/types/graphql-context.interface';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Resolver()
+@SkipThrottle()
 export class LeadsSubscriptionResolver {
   constructor(
     @Inject('PUB_SUB')

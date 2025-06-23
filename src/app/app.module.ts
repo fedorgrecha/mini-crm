@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppResolver } from './app.resolver';
+import { CsrfController } from './csrf.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -82,7 +83,7 @@ import { GqlThrottlerGuard } from './throttler.guard';
     CustomersModule,
     LeadsModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, CsrfController],
   providers: [
     AppService,
     AppResolver,
