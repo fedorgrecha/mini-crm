@@ -11,34 +11,34 @@ import { Customer } from './customer.entity';
 @Entity('customer_files')
 export class CustomerFile {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  filename: string;
+  filename!: string;
 
   @Column()
-  originalname: string;
+  originalname!: string;
 
   @Column()
-  mimetype: string;
+  mimetype!: string;
 
   @Column()
-  path: string;
+  path!: string;
 
   @Column()
-  size: number;
+  size!: number;
 
   @ManyToOne(() => Customer, (customer) => customer.files, {
     onDelete: 'CASCADE',
   })
-  customer: Customer;
+  customer!: Customer;
 
   @Column()
-  customerId: string;
+  customerId!: string;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }

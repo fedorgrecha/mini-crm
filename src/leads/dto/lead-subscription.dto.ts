@@ -5,17 +5,17 @@ import { LeadStatus } from '../entities/lead.entity';
 @ObjectType()
 export class LeadCreatedEvent {
   @Field(() => Lead)
-  lead: Lead;
+  lead!: Lead;
 }
 
 @ObjectType()
 export class LeadStatusChangedEvent {
   @Field(() => Lead)
-  lead: Lead;
+  lead!: Lead;
 
   @Field(() => LeadStatus)
-  previousStatus: LeadStatus;
+  previousStatus!: LeadStatus;
 
   @Field(() => LeadStatus)
-  newStatus: LeadStatus;
+  newStatus!: LeadStatus;
 }

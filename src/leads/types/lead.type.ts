@@ -5,44 +5,44 @@ import { LeadStatus } from '../entities/lead.entity';
 export class LeadResponse {
   @ApiProperty({ description: 'Lead ID' })
   @Expose()
-  id: string;
+  id!: string;
 
   @ApiProperty({ description: 'Lead title' })
   @Expose()
-  title: string;
+  title!: string;
 
   @ApiProperty({ description: 'Client name' })
   @Expose()
-  clientName: string;
+  clientName!: string;
 
   @ApiProperty({ description: 'Client email' })
   @Expose()
-  clientEmail: string;
+  clientEmail?: string;
 
   @ApiProperty({ description: 'Client phone number' })
   @Expose()
-  clientPhone: string;
+  clientPhone?: string;
 
   @ApiProperty({ description: 'Lead description' })
   @Expose()
-  description: string;
+  description?: string;
 
   @ApiProperty({
     description: 'Lead status',
     enum: LeadStatus,
   })
   @Expose()
-  status: LeadStatus;
+  status!: LeadStatus;
 
   @ApiProperty({ description: 'Potential value of the lead' })
   @Expose()
-  value: number;
+  value?: number;
 
   @ApiProperty({ description: 'Creation date' })
   @Expose()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty({ description: 'Last update date' })
   @Expose()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

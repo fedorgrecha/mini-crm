@@ -5,34 +5,34 @@ import { CustomerFileResponse } from './customer-file.type';
 export class CustomerResponse {
   @ApiProperty()
   @Expose()
-  id: string;
+  id!: string;
 
   @ApiProperty()
   @Expose()
-  name: string;
+  name!: string;
 
   @ApiProperty()
   @Expose()
-  email: string;
+  email!: string;
 
   @ApiProperty()
   @Expose()
-  phone: string;
+  phone!: string;
 
   @ApiProperty()
   @Expose()
-  active: boolean;
+  active!: boolean;
 
   @ApiProperty({ type: [CustomerFileResponse] })
   @Expose()
   @Type(() => CustomerFileResponse)
-  files: CustomerFileResponse[];
+  files: CustomerFileResponse[] = [];
 
   @ApiProperty()
   @Expose()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty()
   @Expose()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

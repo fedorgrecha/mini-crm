@@ -32,6 +32,12 @@ describe('LeadsService', () => {
     remove: jest.fn(),
   };
 
+  const mockPubSub = {
+    publish: jest.fn(),
+    subscribe: jest.fn(),
+    unsubscribe: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -39,6 +45,10 @@ describe('LeadsService', () => {
         {
           provide: getRepositoryToken(Lead),
           useValue: mockLeadRepository,
+        },
+        {
+          provide: 'PUB_SUB',
+          useValue: mockPubSub,
         },
       ],
     }).compile();
@@ -58,6 +68,7 @@ describe('LeadsService', () => {
     it('should create and return a lead', async () => {
       const createLeadDto: CreateLeadDto = {
         title: 'Test Lead',
+        status: LeadStatus.NEW,
         clientName: 'John Doe',
         clientEmail: 'john@example.com',
         clientPhone: '1234567890',

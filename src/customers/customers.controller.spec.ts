@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CustomersController } from './customers.controller';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -57,6 +58,13 @@ describe('CustomersController', () => {
     deleteFile: jest.fn(),
   };
 
+  // Mock cache manager
+  const mockCacheManager = {
+    get: jest.fn(),
+    set: jest.fn(),
+    del: jest.fn(),
+  };
+
   // Mock guards
   const mockJwtAuthGuard = { canActivate: jest.fn().mockReturnValue(true) };
   const mockRolesGuard = { canActivate: jest.fn().mockReturnValue(true) };
@@ -75,6 +83,10 @@ describe('CustomersController', () => {
         {
           provide: CustomersService,
           useValue: mockCustomersService,
+        },
+        {
+          provide: CACHE_MANAGER,
+          useValue: mockCacheManager,
         },
       ],
     })
@@ -115,24 +127,62 @@ describe('CustomersController', () => {
   });
 
   describe('findAll', () => {
-    it('should call customersService.findAll with filterDto', async () => {
+    it('should call customersService.findAll with filterDto when cache is empty', async () => {
       const filterDto: FilterCustomersDto = {
         page: 1,
         limit: 10,
       };
 
-      mockCustomersService.findAll.mockResolvedValue({
+      const serviceResult = {
         items: [mockCustomer],
         total: 1,
-      });
+      };
+
+      // Mock cache miss
+      mockCacheManager.get.mockResolvedValue(null);
+      mockCustomersService.findAll.mockResolvedValue(serviceResult);
 
       const result = await controller.findAll(filterDto);
 
+      expect(mockCacheManager.get).toHaveBeenCalledWith(
+        `customers_${JSON.stringify(filterDto)}`,
+      );
       expect(mockCustomersService.findAll).toHaveBeenCalledWith(filterDto);
+      expect(mockCacheManager.set).toHaveBeenCalledWith(
+        `customers_${JSON.stringify(filterDto)}`,
+        {
+          items: [mockCustomer],
+          total: 1,
+        },
+        60_000,
+      );
       expect(result).toEqual({
         items: [mockCustomer],
         total: 1,
       });
+    });
+
+    it('should return cached data when cache hit', async () => {
+      const filterDto: FilterCustomersDto = {
+        page: 1,
+        limit: 10,
+      };
+
+      const cachedResult = {
+        items: [mockCustomer],
+        total: 1,
+      };
+
+      // Mock cache hit
+      mockCacheManager.get.mockResolvedValue(cachedResult);
+
+      const result = await controller.findAll(filterDto);
+
+      expect(mockCacheManager.get).toHaveBeenCalledWith(
+        `customers_${JSON.stringify(filterDto)}`,
+      );
+      expect(mockCustomersService.findAll).not.toHaveBeenCalled();
+      expect(result).toEqual(cachedResult);
     });
   });
 

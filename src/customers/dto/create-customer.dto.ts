@@ -12,18 +12,18 @@ export class CreateCustomerDto {
   @IsString()
   @IsNotEmpty()
   @Length(1, 100)
-  name: string;
+  name!: string;
 
   @ApiProperty()
   @IsEmail()
   @IsNotEmpty()
-  email: string;
+  email!: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   @Length(5, 20)
-  phone: string;
+  phone!: string;
 
   @ApiProperty()
   @IsOptional()

@@ -18,50 +18,50 @@ registerEnumType(LeadStatus, {
 export class Lead {
   @Field(() => ID)
   @Expose()
-  id: string;
+  id!: string;
 
   @Field()
   @Expose()
-  title: string;
+  title!: string;
 
   @Field()
   @Expose()
-  clientName: string;
+  clientName!: string;
 
   @Field({ nullable: true })
   @Expose()
-  clientEmail: string;
+  clientEmail?: string;
 
   @Field({ nullable: true })
   @Expose()
-  clientPhone: string;
+  clientPhone?: string;
 
   @Field({ nullable: true })
   @Expose()
-  description: string;
+  description?: string;
 
   @Field(() => LeadStatus)
   @Expose()
-  status: LeadStatus;
+  status!: LeadStatus;
 
   @Field(() => Float, { nullable: true })
   @Expose()
-  value: number;
+  value?: number;
 
   @Field()
   @Expose()
-  createdAt: Date;
+  createdAt!: Date;
 
   @Field()
   @Expose()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
 
 @ObjectType()
 export class LeadsResponse {
   @Field(() => [Lead])
-  items: Lead[];
+  items: Lead[] = [];
 
   @Field()
-  total: number;
+  total!: number;
 }

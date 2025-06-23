@@ -42,6 +42,7 @@ describe('LeadsController', () => {
     it('should create a new lead', async () => {
       const createLeadDto: CreateLeadDto = {
         title: 'Test Lead',
+        status: LeadStatus.NEW,
         clientName: 'John Doe',
         clientEmail: 'john@example.com',
         clientPhone: '1234567890',

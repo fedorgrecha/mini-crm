@@ -4,33 +4,33 @@ import { Expose } from 'class-transformer';
 export class CustomerFileResponse {
   @ApiProperty()
   @Expose()
-  id: string;
+  id!: string;
 
   @ApiProperty()
   @Expose()
-  filename: string;
+  filename!: string;
 
   @ApiProperty()
   @Expose()
-  originalname: string;
+  originalname!: string;
 
   @ApiProperty()
   @Expose()
-  mimetype: string;
+  mimetype!: string;
 
   @ApiProperty()
   @Expose()
-  size: number;
+  size!: number;
 
   @ApiProperty()
   @Expose()
-  customerId: string;
+  customerId!: string;
 
   @ApiProperty()
   @Expose()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty()
   @Expose()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

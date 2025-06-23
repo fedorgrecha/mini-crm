@@ -16,36 +16,36 @@ export enum LeadStatus {
 @Entity('leads')
 export class Lead {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ length: 100 })
-  title: string;
+  title!: string;
 
   @Column({ length: 100 })
-  clientName: string;
+  clientName!: string;
 
   @Column({ nullable: true })
-  clientEmail: string;
+  clientEmail?: string;
 
   @Column({ length: 20, nullable: true })
-  clientPhone: string;
+  clientPhone?: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description?: string;
 
   @Column({
     type: 'enum',
     enum: LeadStatus,
     default: LeadStatus.NEW,
   })
-  status: LeadStatus;
+  status: LeadStatus = LeadStatus.NEW;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  value: number;
+  value?: number;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }

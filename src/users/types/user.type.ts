@@ -5,29 +5,29 @@ import { Expose } from 'class-transformer';
 export class UserResponse {
   @ApiProperty()
   @Expose()
-  id: string;
+  id!: string;
 
   @ApiProperty()
   @Expose()
-  name: string;
+  name!: string;
 
   @ApiProperty()
   @Expose()
-  email: string;
+  email!: string;
 
   @ApiProperty({ enum: UserRole })
   @Expose()
-  role: UserRole;
+  role!: UserRole;
 
   @ApiProperty()
   @Expose()
-  active: boolean;
+  active!: boolean;
 
   @ApiProperty()
   @Expose()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty()
   @Expose()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

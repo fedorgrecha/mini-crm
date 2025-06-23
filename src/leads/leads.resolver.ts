@@ -13,6 +13,7 @@ import {
 } from './models/lead.input';
 import { Lead, LeadStatus } from './entities/lead.entity';
 import { plainToClass } from 'class-transformer';
+import { CreateLeadDto } from './dto/create-lead.dto';
 
 @Resolver(() => LeadModel)
 @UseGuards(GqlAuthGuard, RolesGuard)
@@ -47,7 +48,12 @@ export class LeadsResolver {
   @Mutation(() => LeadModel)
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async createLead(@Args('input') input: CreateLeadInput): Promise<LeadModel> {
-    const lead: Lead = await this.leadsService.create(input);
+    const lead: Lead = await this.leadsService.create(
+      plainToClass(CreateLeadDto, input, {
+        excludeExtraneousValues: true,
+      }),
+    );
+
     return plainToClass(LeadModel, lead, {
       excludeExtraneousValues: true,
     });

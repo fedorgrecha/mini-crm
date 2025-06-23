@@ -10,6 +10,7 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { LeadStatus } from '../entities/lead.entity';
+import { Expose } from 'class-transformer';
 
 export class CreateLeadDto {
   @ApiProperty({
@@ -19,13 +20,15 @@ export class CreateLeadDto {
   @IsString()
   @IsNotEmpty()
   @Length(1, 100)
-  title: string;
+  @Expose()
+  title!: string;
 
   @ApiProperty({ description: 'Client name', example: 'John Doe' })
   @IsString()
   @IsNotEmpty()
   @Length(1, 100)
-  clientName: string;
+  @Expose()
+  clientName!: string;
 
   @ApiPropertyOptional({
     description: 'Client email',
@@ -33,6 +36,7 @@ export class CreateLeadDto {
   })
   @IsEmail()
   @IsOptional()
+  @Expose()
   clientEmail?: string;
 
   @ApiPropertyOptional({
@@ -42,6 +46,7 @@ export class CreateLeadDto {
   @IsString()
   @IsOptional()
   @Length(5, 20)
+  @Expose()
   clientPhone?: string;
 
   @ApiPropertyOptional({
@@ -50,6 +55,7 @@ export class CreateLeadDto {
   })
   @IsString()
   @IsOptional()
+  @Expose()
   description?: string;
 
   @ApiPropertyOptional({
@@ -60,7 +66,8 @@ export class CreateLeadDto {
   })
   @IsEnum(LeadStatus)
   @IsOptional()
-  status?: LeadStatus;
+  @Expose()
+  status: LeadStatus = LeadStatus.NEW;
 
   @ApiPropertyOptional({
     description: 'Potential value of the lead',
@@ -70,5 +77,6 @@ export class CreateLeadDto {
   @IsNumber()
   @Min(0)
   @IsOptional()
+  @Expose()
   value?: number;
 }

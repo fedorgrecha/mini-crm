@@ -18,10 +18,10 @@ export interface AuthTokens {
 
 export class AuthResponseDto implements AuthTokens {
   @ApiProperty({ description: 'JWT access token' })
-  accessToken: string;
+  accessToken!: string;
 
   @ApiProperty({ description: 'JWT refresh token' })
-  refreshToken: string;
+  refreshToken!: string;
 }
 
 export interface RequestWithUser extends Request {

@@ -10,6 +10,7 @@ import {
   Length,
   Min,
 } from 'class-validator';
+import { Expose } from 'class-transformer';
 
 @InputType()
 export class CreateLeadInput {
@@ -17,39 +18,46 @@ export class CreateLeadInput {
   @IsString()
   @IsNotEmpty()
   @Length(1, 100)
-  title: string;
+  @Expose()
+  title!: string;
 
   @Field()
   @IsString()
   @IsNotEmpty()
   @Length(1, 100)
-  clientName: string;
+  @Expose()
+  clientName!: string;
 
   @Field({ nullable: true })
   @IsEmail()
   @IsOptional()
+  @Expose()
   clientEmail?: string;
 
   @Field({ nullable: true })
   @IsString()
   @IsOptional()
   @Length(5, 20)
+  @Expose()
   clientPhone?: string;
 
   @Field({ nullable: true })
   @IsString()
   @IsOptional()
+  @Expose()
   description?: string;
 
   @Field(() => LeadStatus, { nullable: true })
   @IsEnum(LeadStatus)
   @IsOptional()
+  @Expose()
   status?: LeadStatus;
 
   @Field(() => Float, { nullable: true })
   @IsNumber()
   @Min(0)
   @IsOptional()
+  @Expose()
   value?: number;
 }
 
